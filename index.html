@@ -6532,108 +6532,221 @@
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       };
-      // --- دالة حساب المعركة (Client-Side) - تم التعديل لعودة الجنود ---
-
-      async function resolveBattle(army) {
-        // حذف تنبيه الهجوم من قاعدة البيانات لمنع التكرار
-        if (army.attackDocId) {
-          // نغير الحالة إلى "finished" بدلاً من الحذف المباشر لتجنب التضارب
-          try {
-            updateDoc(doc(db, "attacks", army.attackDocId), {
-              status: "finished",
-            });
-            // ثم نحذفها بعد قليل أو نتركها للأرشيف (يفضل الحذف للتنظيف)
-            setTimeout(
-              () => deleteDoc(doc(db, "attacks", army.attackDocId)),
-              2000,
-            );
-          } catch (e) {}
-        }
-
-        if (army.type === "DONATE") return;
-
+           // --- تعريف خصائص الوحدات (للحسابات المعقدة) ---
+const UNIT_STATS = {
+    infantry: { atk: 10, def: 20, capacity: 10, bonusVs: 'cavalry' }, // مشاة: دفاعي + ضد الفرسان
+    archers:  { atk: 25, def: 5,  capacity: 5,  bonusVs: 'infantry' }, // رماة: هجومي + ضد المشاة
+    cavalry:  { atk: 35, def: 15, capacity: 20, bonusVs: 'archers' },  // فرسان: سريع + ضد الرماة
+    siege:    { atk: 80, def: 10, capacity: 50, bonusVs: 'wall' }      // مركبات: تدمير الجدران
+};
+     // --- دالة المعركة المتطورة ---
+async function resolveBattle(army) {
+    // 1. تنظيف التنبيهات من قاعدة البيانات
+    if (army.attackDocId) {
         try {
-          // 1. جلب بيانات العدو
-          const enemyRef = doc(db, "users", army.targetId);
-          const enemySnap = await getDoc(enemyRef);
+            // نحدث الحالة فقط، والحذف يتم لاحقاً أو عبر Cloud Function
+            updateDoc(doc(db, "attacks", army.attackDocId), { status: "finished" });
+            setTimeout(() => deleteDoc(doc(db, "attacks", army.attackDocId)).catch(()=>{}), 5000);
+        } catch (e) {}
+    }
 
-          if (enemySnap.exists()) {
-            const enemyData = enemySnap.data();
-            const defenderUnits = enemyData.units || {};
+    // التبرع لا يمر من هنا
+    if (army.type === "DONATE") return;
 
-            // 2. حساب القوة
-            let attackerPower = 0;
-            let attackerSoldierCount = 0;
-            for (const [key, count] of Object.entries(army.unitsPayload)) {
-              const [type, lvl] = key.split("_");
-              const stats = UNIT_DATA[type];
-              const p = (stats.baseAtk + stats.baseDef) * (parseInt(lvl) || 1);
-              attackerPower += count * p;
-              attackerSoldierCount += count;
-            }
+    try {
+        // --- 1. جلب بيانات المدافع ---
+        const enemyRef = doc(db, "users", army.targetId);
+        const enemySnap = await getDoc(enemyRef);
 
-            let defenderPower = 0;
-            let defenderSoldierCount = 0;
-            for (const [key, count] of Object.entries(defenderUnits)) {
-              const [type, lvl] = key.split("_");
-              const stats = UNIT_DATA[type];
-              const p = (stats.baseAtk + stats.baseDef) * (parseInt(lvl) || 1);
-              defenderPower += count * p;
-              defenderSoldierCount += count;
-            }
+        if (!enemySnap.exists()) return console.error("Enemy not found");
 
-            // 3. تحديد الفائز
-            const isAttackerWinner = attackerPower > defenderPower;
+        const enemyData = enemySnap.data();
+        const defenderUnits = enemyData.units || {};
+        const defenderCastleLevel = enemyData.rank || 1;
 
-            // 4. تطبيق النتائج
-            if (isAttackerWinner) {
-              // المهاجم ينهب الموارد
-              const lootGold = Math.floor((enemyData.gold || 0) * 0.2);
-              const lootSilver = Math.floor((enemyData.silver || 0) * 0.2);
+        // --- 2. حساب قوة المهاجم (مع تصنيف الوحدات) ---
+        let attTotalAtk = 0;
+        let attTotalDef = 0; // نحتاجه لحساب الخسائر
+        let attCapacity = 0; // سعة التحميل
+        let attComposition = { infantry:0, archers:0, cavalry:0, siege:0 }; // إحصاء العدد
 
-              // تحديث المهاجم (أنت)
-              const myUpdate = {
-                gold: increment(lootGold),
-                silver: increment(lootSilver),
-              };
+        for (const [key, count] of Object.entries(army.unitsPayload)) {
+            if(count <= 0) continue;
+            const [type, lvlStr] = key.split('_'); 
+            const level = parseInt(lvlStr) || 1;
+            const stats = UNIT_STATS[type] || {atk:10, def:10, capacity:10};
+            
+            // معادلة القوة مع المستوى
+            const lvlMult = Math.pow(1.2, level - 1); // زيادة 20% لكل مستوى
+            
+            const unitAtk = stats.atk * lvlMult * level;
+            const unitDef = stats.def * lvlMult * level;
 
-              // --- هام جداً: إعادة الجيش المنتصر ---
-              // نقوم بإرجاع الجنود الذين تم خصمهم عند بداية الهجوم
-              for (const [unitKey, count] of Object.entries(
-                army.unitsPayload,
-              )) {
-                // يمكنك هنا وضع نسبة خسارة (مثلاً يرجع 90% فقط)
-                // لكن حالياً سنعيدهم كلهم كما طلبت
-                myUpdate[`units.${unitKey}`] = increment(count);
-              }
-
-              // تحديث عداد القتلى في حدث The Blood
-              if (isBloodEventActive) {
-                myUpdate.eventKills = increment(defenderSoldierCount);
-              }
-
-              updateDoc(doc(db, "users", currentUser.uid), myUpdate);
-
-              // تحديث الخاسر (العدو)
-              updateDoc(enemyRef, {
-                gold: increment(-lootGold),
-                silver: increment(-lootSilver),
-                // خصم جنود العدو (اختياري، لزيادة الواقعية يمكن تدمير جيشه)
-              });
-
-              alert(
-                `🎉 انتصار! جيشك دمر العدو وعاد للقلعة محملاً بـ ${lootGold} ذهب.`,
-              );
-            } else {
-              alert(
-                `☠️ هزيمة! جيشك تم تدميره بالكامل على يد دفاعات العدو ولم يعد أحد.`,
-              );
-            }
-          }
-        } catch (e) {
-          console.error("Battle Error:", e);
+            attTotalAtk += unitAtk * count;
+            attTotalDef += unitDef * count;
+            attCapacity += (stats.capacity * count);
+            
+            if(attComposition[type] !== undefined) attComposition[type] += count;
         }
-      }
+
+        // --- 3. حساب قوة المدافع (مع تصنيف الوحدات) ---
+        let defTotalAtk = 0; // نحتاجه لحساب ضرر المهاجم
+        let defTotalDef = 0;
+        let defComposition = { infantry:0, archers:0, cavalry:0, siege:0 };
+
+        for (const [key, count] of Object.entries(defenderUnits)) {
+            if(count <= 0) continue;
+            const [type, lvlStr] = key.split('_');
+            const level = parseInt(lvlStr) || 1;
+            const stats = UNIT_STATS[type] || {atk:10, def:10};
+
+            const lvlMult = Math.pow(1.2, level - 1);
+
+            const unitAtk = stats.atk * lvlMult * level;
+            const unitDef = stats.def * lvlMult * level;
+
+            defTotalAtk += unitAtk * count;
+            defTotalDef += unitDef * count;
+
+            if(defComposition[type] !== undefined) defComposition[type] += count;
+        }
+
+        // --- 4. تطبيق "بونص" الجدار (Wall Bonus) للمدافع ---
+        // كل مستوى قلعة يعطي زيادة 5% للدفاع
+        // لكن المركبات (Siege) عند المهاجم تقلل هذا البونص!
+        const baseWallBonus = 1 + (defenderCastleLevel * 0.05); 
+        // كل مركبة تقلل كفاءة الجدار قليلاً (بحد أقصى إلغاء البونص)
+        const siegeReduction = Math.min(0.5, (attComposition.siege * 0.01)); // أقصى حد خصم 50%
+        const finalWallBonus = Math.max(1, baseWallBonus - siegeReduction);
+
+        defTotalDef = defTotalDef * finalWallBonus;
+
+        // --- 5. تطبيق نظام المضادات (Tactical Counters) ---
+        // إضافة 15% قوة هجومية إذا كان لديك النوع المضاد للعدو
+        
+        // هل المهاجم يملك فرسان أكثر من مشاة العدو؟ (بونص ضد الرماة)
+        if (attComposition.cavalry > defComposition.infantry) attTotalAtk *= 1.15;
+        // هل المهاجم يملك رماة ويحميهم؟
+        if (attComposition.archers > 0 && attComposition.infantry > 0) attTotalAtk *= 1.1; 
+
+        // هل المدافع يملك مشاة لصد الفرسان؟
+        if (defComposition.infantry > attComposition.cavalry) defTotalDef *= 1.15;
+
+        // --- 6. عامل الحظ (Random Factor) ---
+        // رقم عشوائي بين 0.9 و 1.1
+        const attLuck = 0.9 + Math.random() * 0.2;
+        const defLuck = 0.9 + Math.random() * 0.2;
+
+        const finalAttPower = attTotalAtk * attLuck;
+        const finalDefPower = defTotalDef * defLuck;
+
+        console.log(`Battle: ATT(${finalAttPower.toFixed(0)}) vs DEF(${finalDefPower.toFixed(0)})`);
+
+        // --- 7. تحديد النتيجة وحساب الخسائر ---
+        const isAttackerWin = finalAttPower > finalDefPower;
+        
+        // حساب نسبة الضرر (كلما كانت المعركة متقاربة، زادت الخسائر)
+        // Ratio: 1.0 = متكافئة جداً (خسائر عالية)، 2.0 = اكتساح (خسائر قليلة)
+        const battleRatio = isAttackerWin ? (finalAttPower / finalDefPower) : (finalDefPower / finalAttPower);
+        
+        // دالة لحساب نسبة الخسارة (Loss Percentage)
+        // إذا النسبة 1 (متادلة) الخسارة 40%، إذا النسبة 3 (اكتساح) الخسارة 10%
+        const lossFactor = Math.max(0.05, 0.4 - ((battleRatio - 1) * 0.1)); 
+
+        const myUpdate = {};
+        const enemyUpdate = {};
+
+        // === إذا فاز المهاجم ===
+        if (isAttackerWin) {
+            // أ. حساب الموارد المنهوبة (بناءً على سعة التحميل)
+            let lootGold = 0, lootSilver = 0;
+            // المدافع يخسر نسبة من موارده (مثلاً 30%)
+            const potentialGold = Math.floor((enemyData.gold || 0) * 0.3);
+            const potentialSilver = Math.floor((enemyData.silver || 0) * 0.3);
+            
+            // لا نأخذ أكثر مما نستطيع حمله
+            let currentLoad = 0;
+            
+            // نملأ الذهب أولاً
+            if (currentLoad < attCapacity) {
+                const take = Math.min(potentialGold, attCapacity - currentLoad);
+                lootGold = take;
+                currentLoad += take;
+            }
+            // ثم الفضة
+            if (currentLoad < attCapacity) {
+                const take = Math.min(potentialSilver, attCapacity - currentLoad);
+                lootSilver = take;
+                currentLoad += take;
+            }
+
+            // تحديث الموارد
+            myUpdate.gold = increment(lootGold);
+            myUpdate.silver = increment(lootSilver);
+            enemyUpdate.gold = increment(-lootGold);
+            enemyUpdate.silver = increment(-lootSilver);
+
+            // ب. خسائر المهاجم (الفائز يخسر القليل)
+            // نعيد الجنود الأحياء فقط
+            for (const [unitKey, count] of Object.entries(army.unitsPayload)) {
+                // الفائز يخسر (lossFactor / 2) لأنه انتصر
+                const survivors = Math.floor(count * (1 - (lossFactor * 0.5)));
+                if (survivors > 0) {
+                    myUpdate[`units.${unitKey}`] = increment(survivors);
+                }
+            }
+
+            // ج. خسائر المدافع (الخاسر يخسر الكثير)
+            for (const [unitKey, count] of Object.entries(defenderUnits)) {
+                // الخاسر يخسر (lossFactor * 1.5)
+                const dead = Math.floor(count * (lossFactor * 1.5));
+                if (dead > 0) {
+                    enemyUpdate[`units.${unitKey}`] = increment(-dead);
+                }
+            }
+
+            // تحديث The Blood Event
+            if (isBloodEventActive) {
+                // نحسب عدد قتلى العدو الإجمالي
+                let totalKills = 0;
+                for(let k in defenderUnits) totalKills += Math.floor(defenderUnits[k] * lossFactor * 1.5);
+                myUpdate.eventKills = increment(totalKills);
+            }
+
+            alert(`🏆 نصر ساحق!\nالموارد المنهوبة: ${lootGold} ذهب | ${lootSilver} فضة\nخسائر جيشك: ${((lossFactor * 0.5)*100).toFixed(1)}%`);
+
+        } 
+        // === إذا خسر المهاجم ===
+        else {
+            // أ. خسائر المهاجم (الخاسر)
+            // يعود القليل جداً من الناجين (أو لا أحد)
+            for (const [unitKey, count] of Object.entries(army.unitsPayload)) {
+                // يخسر نسبة كبيرة جداً (مثلاً 80% ماتوا)
+                const survivors = Math.floor(count * 0.1); // عودة 10% فقط كفلول هاربة
+                if (survivors > 0) {
+                    myUpdate[`units.${unitKey}`] = increment(survivors);
+                }
+            }
+
+            // ب. خسائر المدافع (الفائز)
+            for (const [unitKey, count] of Object.entries(defenderUnits)) {
+                const dead = Math.floor(count * (lossFactor * 0.5));
+                if (dead > 0) {
+                    enemyUpdate[`units.${unitKey}`] = increment(-dead);
+                }
+            }
+
+            alert(`☠️ هزيمة مؤلمة!\nدفاعات العدو كانت قوية جداً.\nنجا فقط 10% من جيشك.`);
+        }
+
+        // --- 8. تنفيذ التحديثات في قاعدة البيانات ---
+        await updateDoc(doc(db, "users", currentUser.uid), myUpdate);
+        await updateDoc(enemyRef, enemyUpdate);
+
+    } catch (e) {
+        console.error("Battle Logic Error:", e);
+    }
+}
       // --- منطق الدبلوماسية (Diplomacy Logic) ---
 
       // 1. فتح النافذة وتحميل اللاعبين
@@ -7026,6 +7139,7 @@ document.body.appendChild(fpsDiv);
     </script>
   </body>
 </html>
+
 
 
 
