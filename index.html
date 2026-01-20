@@ -6357,17 +6357,54 @@
         upgradeModal.style.display = "flex";
       };
 
-      window.executeUpgrade = (cost, woodCost, lvl) => {
-        updateDoc(doc(db, "users", currentUser.uid), {
-          gold: increment(-cost),
-          silver: increment(-cost),
-          wood: increment(-woodCost),
-          upgradeEndTime: Date.now() + BASE_UPGRADE_TIME_MIN * lvl * 60000,
-        })
-          .then(() => {
+      window.executeUpgrade = async (cost, woodCost, lvl) => {
+        const btn = document.getElementById("confirm-upgrade-btn");
+        
+        // 1. حماية الواجهة: تعطيل الزر فوراً وتغيير نصه
+        if (btn) {
+            if (btn.disabled) return; // إذا كان معطلاً بالفعل، توقف
+            btn.disabled = true;
+            btn.innerText = "⏳ جاري المعالجة...";
+        }
+
+        // 2. حماية المنطق: التأكد من أن البيانات محدثة
+        if (!userDocData) return;
+        
+        // التحقق مما إذا كان هناك تطوير جارٍ بالفعل (حماية إضافية)
+        if (userDocData.upgradeEndTime && userDocData.upgradeEndTime > Date.now()) {
+            alert("⛔ القلعة قيد التطوير بالفعل! لا يمكن تنفيذ طلبين في وقت واحد.");
             closeUpgradeModal();
-          })
-          .catch((e) => alert("Error: " + e.message));
+            return;
+        }
+
+        // التحقق من الموارد مرة أخرى (للحماية من التلاعب السريع)
+        if (userDocData.gold < cost || userDocData.silver < cost || (woodCost > 0 && userDocData.wood < woodCost)) {
+             alert("الموارد غير كافية!");
+             closeUpgradeModal();
+             return;
+        }
+
+        try {
+            // 3. التنفيذ الآمن
+            await updateDoc(doc(db, "users", currentUser.uid), {
+                gold: increment(-cost),
+                silver: increment(-cost),
+                wood: increment(-woodCost),
+                upgradeEndTime: Date.now() + BASE_UPGRADE_TIME_MIN * lvl * 60000,
+            });
+            
+            // إغلاق النافذة بعد النجاح
+            closeUpgradeModal();
+            
+        } catch (e) {
+            console.error(e);
+            alert("حدث خطأ في الاتصال، حاول مرة أخرى.");
+            // إعادة تفعيل الزر في حالة الفشل فقط
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = "تأكيد التطوير";
+            }
+        }
       };
 
       // --- كود المصادقة المعدل (لحل مشكلة زر المشرفين) ---
@@ -7139,6 +7176,7 @@ document.body.appendChild(fpsDiv);
     </script>
   </body>
 </html>
+
 
 
 
