@@ -6809,23 +6809,38 @@
             alert("خطأ: " + e.message);
           }
         }
-      };
+      }; // --- إعدادات عداد FPS ---
+let lastTimeFPS = performance.now();
+let frameCount = 0;
+const fpsDiv = document.createElement("div");
+fpsDiv.style.position = "fixed";
+fpsDiv.style.top = "60px"; // أسفل الشريط العلوي قليلاً
+fpsDiv.style.left = "10px"; // أقصى اليسار
+fpsDiv.style.color = "#00ff00"; // لون أخضر
+fpsDiv.style.backgroundColor = "rgba(0, 0, 0, 0.6)"; // خلفية شفافة
+fpsDiv.style.padding = "5px 10px";
+fpsDiv.style.borderRadius = "5px";
+fpsDiv.style.fontFamily = "monospace";
+fpsDiv.style.fontWeight = "bold";
+fpsDiv.style.fontSize = "14px";
+fpsDiv.style.zIndex = "10000";
+fpsDiv.style.pointerEvents = "none"; // مهم جداً: يمنع تداخل اللمس مع اللعبة
+fpsDiv.innerText = "FPS: 60";
+document.body.appendChild(fpsDiv);
       // --- 16. حلقة التحريك الرئيسية (Animation Loop) ---
       function animate() {
         requestAnimationFrame(animate);
-
-        // =========================================================
-        // [1] تحريك السحب (Clouds)
-        // =========================================================
-        if (typeof clouds !== "undefined") {
-          clouds.forEach((cloud) => {
-            cloud.position.x += cloud.userData.speed;
-            if (cloud.position.x > 100000) {
-              cloud.position.x = -100000;
-              cloud.position.z = (Math.random() - 0.5) * 200000;
-            }
-          });
+         // --- بداية كود FPS ---
+        const nowFPS = performance.now();
+        frameCount++;
+        if (nowFPS - lastTimeFPS >= 1000) {
+            fpsDiv.innerText = "FPS: " + frameCount;
+            // تغيير اللون حسب الأداء
+            fpsDiv.style.color = frameCount >= 50 ? "#00ff00" : (frameCount >= 30 ? "#ffff00" : "#ff0000");
+            frameCount = 0;
+            lastTimeFPS = nowFPS;
         }
+        // --- نهاية كود FPS ---
 
         // =========================================================
         // [2] منطق تطوير القلعة
@@ -7010,6 +7025,7 @@
     </script>
   </body>
 </html>
+
 
 
 
