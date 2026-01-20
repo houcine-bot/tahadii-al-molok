@@ -3325,8 +3325,6 @@
           "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
         }
       }
-    </script>
-
     <!-- الكود البرمجي الرئيسي -->
     <script type="module">
       import { initializeApp } from "firebase/app";
@@ -3399,7 +3397,7 @@
       const navbar = document.getElementById("game-navbar");
       const mobileControls = document.getElementById("mobile-controls");
       const castleControlsPanel = document.getElementById(
-        "castle-controls-panel"
+        "castle-controls-panel",
       );
 
       // Audio Elements
@@ -3482,7 +3480,7 @@
           const q = query(
             collection(db, "users"),
             orderBy("eventKills", "desc"),
-            limit(50)
+            limit(50),
           );
           const snap = await getDocs(q);
 
@@ -3532,7 +3530,7 @@
           userDocData.redeemedCodes.includes(code)
         ) {
           return alert(
-            "⛔ لقد قمت باستخدام هذا الكود مسبقاً! لا يمكن استخدامه مرة أخرى."
+            "⛔ لقد قمت باستخدام هذا الكود مسبقاً! لا يمكن استخدامه مرة أخرى.",
           );
         }
 
@@ -3607,7 +3605,7 @@
       window.deleteAccount = async () => {
         if (
           !confirm(
-            " هل أنت متأكد تماماً من حذف حسابك؟\nسيتم فقدان القلعة والجيوش والموارد نهائياً ولا يمكن استعادتها!"
+            " هل أنت متأكد تماماً من حذف حسابك؟\nسيتم فقدان القلعة والجيوش والموارد نهائياً ولا يمكن استعادتها!",
           )
         )
           return;
@@ -3626,7 +3624,7 @@
           console.error(error);
           if (error.code === "auth/requires-recent-login") {
             alert(
-              "لأمانك، يرجى تسجيل الخروج ثم تسجيل الدخول مرة أخرى لمحاولة حذف الحساب."
+              "لأمانك، يرجى تسجيل الخروج ثم تسجيل الدخول مرة أخرى لمحاولة حذف الحساب.",
             );
           } else {
             alert("حدث خطأ أثناء الحذف: " + error.message);
@@ -3788,7 +3786,7 @@
         const q = query(
           collection(db, "users"),
           orderBy("username"),
-          limit(50)
+          limit(50),
         );
         const snap = await getDocs(q);
 
@@ -3812,8 +3810,8 @@
               <td>
                   <button class="recruit-btn" style="background:#e67e22; padding:5px 10px;" 
                   onclick="openSanctionModal('${uid}', '${
-            data.username
-          }')">إدارة العقوبات</button>
+                    data.username
+                  }')">إدارة العقوبات</button>
               </td>
           `;
           tbody.appendChild(tr);
@@ -3924,8 +3922,8 @@
                   ).toLocaleString()}</td>
                   <td>
                       <button class="btn-delete-user" onclick="adminDeleteUser('${uid}', '${
-              data.email
-            }')">حذف</button>
+                        data.email
+                      }')">حذف</button>
                   </td>
               `;
             tbody.appendChild(row);
@@ -3940,7 +3938,7 @@
       window.adminDeleteUser = async (uid, email) => {
         if (
           confirm(
-            `هل أنت متأكد من حذف حساب اللاعب: ${email}؟\nسيختفي من اللعبة نهائياً.`
+            `هل أنت متأكد من حذف حساب اللاعب: ${email}؟\nسيختفي من اللعبة نهائياً.`,
           )
         ) {
           try {
@@ -4252,7 +4250,7 @@
         const q = query(
           collection(db, "active_sieges"),
           where("targetId", "==", uid),
-          where("type", "==", type)
+          where("type", "==", type),
         );
         const snap = await getDocs(q);
         snap.forEach((doc) => {
@@ -4285,7 +4283,7 @@
           // نجلب نسبة العقوبة من السيرفر
           const penalty = await getActiveSiegePenalty(
             currentUser.uid,
-            "military"
+            "military",
           );
 
           // حساب مضاعف التكلفة (مثلاً لو العقوبة 0.3 ستصبح التكلفة 1.3 ضعف)
@@ -4302,7 +4300,7 @@
             userDocData.silver < totalSilver
           ) {
             return alert(
-              `لا يوجد موارد كافية!\nالمطلوب: ${totalGold} ذهب | ${totalSilver} فضة`
+              `لا يوجد موارد كافية!\nالمطلوب: ${totalGold} ذهب | ${totalSilver} فضة`,
             );
           }
 
@@ -4430,7 +4428,7 @@
         // فحص السلام
         const peaceQuery = query(
           collection(db, "peace_treaties"),
-          where("parties", "array-contains", currentUser.uid)
+          where("parties", "array-contains", currentUser.uid),
         );
         const peaceSnap = await getDocs(peaceQuery);
         let isPeace = false;
@@ -4474,7 +4472,7 @@
 
         if (
           confirm(
-            `هل أنت متأكد من شن الحرب؟\nعدد الجنود: ${totalSoldiers}\nالقوة: ${totalPower}`
+            `هل أنت متأكد من شن الحرب؟\nعدد الجنود: ${totalSoldiers}\nالقوة: ${totalPower}`,
           )
         ) {
           const enemyIdToAttack = targetEnemyId;
@@ -4522,13 +4520,13 @@
               0xff0000,
               "ATTACK",
               unitsPayload,
-              attackDocId
+              attackDocId,
             );
           } else {
             alert(
               `جاري الهجوم! ستصل القوات خلال ${(durationMs / 1000 / 60).toFixed(
-                1
-              )} دقيقة.`
+                1,
+              )} دقيقة.`,
             );
           }
         }
@@ -4640,7 +4638,7 @@
           confirm(
             `هل أنت متأكد من إرسال الدعم؟\n(الموارد: ${
               goldAmt + silverAmt + woodAmt
-            } | الجنود: ${totalUnits})`
+            } | الجنود: ${totalUnits})`,
           )
         ) {
           const friendId = targetEnemyId;
@@ -4666,7 +4664,7 @@
               const powerPerUnit =
                 (stats.baseAtk + stats.baseDef) * Math.pow(1.2, lvl - 1) * lvl;
               myUpdate.power = increment(
-                -Math.floor(powerPerUnit * unitsToSend[k])
+                -Math.floor(powerPerUnit * unitsToSend[k]),
               );
             }
           }
@@ -4692,7 +4690,7 @@
               const powerPerUnit =
                 (stats.baseAtk + stats.baseDef) * Math.pow(1.2, lvl - 1) * lvl;
               friendUpdate.power = increment(
-                Math.floor(powerPerUnit * unitsToSend[k])
+                Math.floor(powerPerUnit * unitsToSend[k]),
               );
             }
           }
@@ -4708,7 +4706,7 @@
               0, // القوة هنا لا تهم لأنها تبرع
               friendId,
               0x2ecc71, // لون أخضر للدعم
-              "DONATE"
+              "DONATE",
             );
           }
 
@@ -4745,7 +4743,7 @@
         lArm.position.set(-6.5, 15, 0);
         const spear = new THREE.Mesh(
           new THREE.CylinderGeometry(0.5, 0.5, 30),
-          new THREE.MeshStandardMaterial({ color: 0x5c4033 })
+          new THREE.MeshStandardMaterial({ color: 0x5c4033 }),
         );
         spear.rotation.x = Math.PI / 2;
         spear.position.set(6.5, 15, 10);
@@ -4763,7 +4761,7 @@
         colorHex,
         type,
         unitsPayload = null,
-        attackDocId = null
+        attackDocId = null,
       ) {
         const points = [];
         const height = 100;
@@ -4796,7 +4794,7 @@
         // العلم
         const pole = new THREE.Mesh(
           new THREE.CylinderGeometry(3, 3, 150),
-          new THREE.MeshBasicMaterial({ color: 0xffffff })
+          new THREE.MeshBasicMaterial({ color: 0xffffff }),
         );
         pole.position.set(0, 75, -20);
         const flag = new THREE.Mesh(
@@ -4804,7 +4802,7 @@
           new THREE.MeshBasicMaterial({
             color: colorHex,
             side: THREE.DoubleSide,
-          })
+          }),
         );
         flag.position.set(40, 130, -20);
         armyGroup.add(pole);
@@ -4867,7 +4865,7 @@
             db,
             "users",
             currentUser.uid,
-            "reports"
+            "reports",
           );
           // نجلب آخر 30 رسالة
           const q = query(reportsRef, orderBy("timestamp", "desc"), limit(30));
@@ -4889,7 +4887,7 @@
             // --- الحالة 1: عرض سلام 🕊️ ---
             if (data.type === "peace_offer") {
               const durationHours = (data.duration / (1000 * 60 * 60)).toFixed(
-                1
+                1,
               );
               const isPending = data.status === "pending";
 
@@ -4947,16 +4945,16 @@
                 <div class="report-item ${isWin ? "win" : "loss"}">
                     <div class="report-header">
                         <span style="color: ${isWin ? "#2ecc71" : "#e74c3c"}">${
-                isWin ? "انتصار 🏆" : "هزيمة ☠️"
-              }</span>
+                          isWin ? "انتصار 🏆" : "هزيمة ☠️"
+                        }</span>
                         <span>ضد: ${data.enemyName}</span>
                     </div>
                     <div style="font-size:12px; color:#ccc;">
                         قوتك: ${(
                           data.myPower || 0
                         ).toLocaleString()} | العدو: ${(
-                data.enemyPower || 0
-              ).toLocaleString()}
+                          data.enemyPower || 0
+                        ).toLocaleString()}
                     </div>
                     ${
                       isWin
@@ -4997,7 +4995,7 @@
         reportId,
         senderId,
         duration,
-        isAccepted
+        isAccepted,
       ) => {
         if (!currentUser) return;
 
@@ -5009,7 +5007,7 @@
             doc(db, "users", currentUser.uid, "reports", reportId),
             {
               status: newStatus,
-            }
+            },
           );
 
           if (isAccepted) {
@@ -5048,8 +5046,8 @@
                   .play()
                   .catch((e) =>
                     console.log(
-                      "Audio autoplay blocked, user must interact first"
-                    )
+                      "Audio autoplay blocked, user must interact first",
+                    ),
                   );
               }
             })
@@ -5066,7 +5064,7 @@
         60,
         window.innerWidth / window.innerHeight,
         10,
-        500000
+        500000,
       );
       camera.position.set(0, 10000, 0);
       camera.lookAt(0, 0, 0);
@@ -5121,12 +5119,12 @@
       }
       terrainGeo.setAttribute(
         "color",
-        new THREE.Float32BufferAttribute(colors, 3)
+        new THREE.Float32BufferAttribute(colors, 3),
       );
       terrainGeo.computeVertexNormals();
       const terrain = new THREE.Mesh(
         terrainGeo,
-        new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 })
+        new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 }),
       );
       terrain.receiveShadow = true;
       scene.add(terrain);
@@ -5175,76 +5173,89 @@
 
       const forests = [];
 
-function createForests() {
-    // إعدادات الأعداد
-    const numberOfClusters = 150;      // عدد الغابات
-    const treesPerCluster = 15;        // كثافة الأشجار
-    const totalTrees = numberOfClusters * treesPerCluster;
+      function createForests() {
+        // إعدادات الأعداد
+        const numberOfClusters = 150; // عدد الغابات
+        const treesPerCluster = 15; // كثافة الأشجار
+        const totalTrees = numberOfClusters * treesPerCluster;
 
-    // 1. تجهيز الأشكال والخامات مرة واحدة فقط
-    const trunkGeo = new THREE.CylinderGeometry(10, 15, 60, 5); // تقليل الأضلاع لزيادة الأداء
-    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5c4033 });
-    
-    // أوراق الصنوبر (مخروط)
-    const pineGeo = new THREE.ConeGeometry(40, 100, 5);
-    const pineMat = new THREE.MeshStandardMaterial({ color: 0x2d4c1e, flatShading: true });
-    
-    // أوراق البلوط (آيكوساهيدرون - خفيف جداً)
-    const oakGeo = new THREE.IcosahedronGeometry(50, 0); 
-    const oakMat = new THREE.MeshStandardMaterial({ color: 0x4ca64c, flatShading: true });
+        // 1. تجهيز الأشكال والخامات مرة واحدة فقط
+        const trunkGeo = new THREE.CylinderGeometry(10, 15, 60, 5); // تقليل الأضلاع لزيادة الأداء
+        const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5c4033 });
 
-    // 2. إنشاء الـ InstancedMeshes (الحاوية الكبرى لكل الأشجار)
-    const iTrunks = new THREE.InstancedMesh(trunkGeo, trunkMat, totalTrees);
-    const iPines = new THREE.InstancedMesh(pineGeo, pineMat, totalTrees);
-    const iOaks = new THREE.InstancedMesh(oakGeo, oakMat, totalTrees);
+        // أوراق الصنوبر (مخروط)
+        const pineGeo = new THREE.ConeGeometry(40, 100, 5);
+        const pineMat = new THREE.MeshStandardMaterial({
+          color: 0x2d4c1e,
+          flatShading: true,
+        });
 
-    // تفعيل الظلال
-    iTrunks.castShadow = true; iTrunks.receiveShadow = true;
-    iPines.castShadow = true; iPines.receiveShadow = true;
-    iOaks.castShadow = true; iOaks.receiveShadow = true;
+        // أوراق البلوط (آيكوساهيدرون - خفيف جداً)
+        const oakGeo = new THREE.IcosahedronGeometry(50, 0);
+        const oakMat = new THREE.MeshStandardMaterial({
+          color: 0x4ca64c,
+          flatShading: true,
+        });
 
-    scene.add(iTrunks);
-    scene.add(iPines);
-    scene.add(iOaks);
+        // 2. إنشاء الـ InstancedMeshes (الحاوية الكبرى لكل الأشجار)
+        const iTrunks = new THREE.InstancedMesh(trunkGeo, trunkMat, totalTrees);
+        const iPines = new THREE.InstancedMesh(pineGeo, pineMat, totalTrees);
+        const iOaks = new THREE.InstancedMesh(oakGeo, oakMat, totalTrees);
 
-    // متغير وهمي للمساعدة في الحسابات
-    const dummy = new THREE.Object3D();
-    let treeIndex = 0;
-    const mapRange = 350000;
+        // تفعيل الظلال
+        iTrunks.castShadow = true;
+        iTrunks.receiveShadow = true;
+        iPines.castShadow = true;
+        iPines.receiveShadow = true;
+        iOaks.castShadow = true;
+        iOaks.receiveShadow = true;
 
-    // 3. حلقة إنشاء الغابات
-    for (let i = 0; i < numberOfClusters; i++) {
-        // إنشاء "مجموعة منطقية" فقط (للتفاعل واللمس) وليس للرسم
-        const forestGroup = new THREE.Group();
-        
-        const angle = Math.random() * Math.PI * 2;
-        const distance = 8000 + Math.random() * (mapRange / 2);
-        const cx = Math.cos(angle) * distance;
-        const cz = Math.sin(angle) * distance;
+        scene.add(iTrunks);
+        scene.add(iPines);
+        scene.add(iOaks);
 
-        forestGroup.position.set(cx, 0, cz);
-        
-        // بيانات التفاعل (للنقر)
-        forestGroup.userData = { type: 'wood', isForest: true, id: `forest_${i}` };
+        // متغير وهمي للمساعدة في الحسابات
+        const dummy = new THREE.Object3D();
+        let treeIndex = 0;
+        const mapRange = 350000;
 
-        // إضافة صندوق تصادم وهمي (غير مرئي) ليتمكن اللاعب من النقر عليه
-        const hitBox = new THREE.Mesh(
+        // 3. حلقة إنشاء الغابات
+        for (let i = 0; i < numberOfClusters; i++) {
+          // إنشاء "مجموعة منطقية" فقط (للتفاعل واللمس) وليس للرسم
+          const forestGroup = new THREE.Group();
+
+          const angle = Math.random() * Math.PI * 2;
+          const distance = 8000 + Math.random() * (mapRange / 2);
+          const cx = Math.cos(angle) * distance;
+          const cz = Math.sin(angle) * distance;
+
+          forestGroup.position.set(cx, 0, cz);
+
+          // بيانات التفاعل (للنقر)
+          forestGroup.userData = {
+            type: "wood",
+            isForest: true,
+            id: `forest_${i}`,
+          };
+
+          // إضافة صندوق تصادم وهمي (غير مرئي) ليتمكن اللاعب من النقر عليه
+          const hitBox = new THREE.Mesh(
             new THREE.CylinderGeometry(200, 200, 300, 8),
-            new THREE.MeshBasicMaterial({ visible: false }) // غير مرئي
-        );
-        hitBox.position.y = 150;
-        forestGroup.add(hitBox);
+            new THREE.MeshBasicMaterial({ visible: false }), // غير مرئي
+          );
+          hitBox.position.y = 150;
+          forestGroup.add(hitBox);
 
-        // إضافة الأيقونات (كما في الكود السابق)
-        addForestLabelAndIcons(forestGroup); // (دالة مساعدة بالأسفل)
+          // إضافة الأيقونات (كما في الكود السابق)
+          addForestLabelAndIcons(forestGroup); // (دالة مساعدة بالأسفل)
 
-        scene.add(forestGroup);
-        forests.push(forestGroup);
+          scene.add(forestGroup);
+          forests.push(forestGroup);
 
-        // 4. توزيع الأشجار داخل الـ InstancedMesh
-        const isPineForest = Math.random() > 0.5;
+          // 4. توزيع الأشجار داخل الـ InstancedMesh
+          const isPineForest = Math.random() > 0.5;
 
-        for (let j = 0; j < treesPerCluster; j++) {
+          for (let j = 0; j < treesPerCluster; j++) {
             // موقع الشجرة النسبي
             const r = Math.random() * 700;
             const theta = Math.random() * Math.PI * 2;
@@ -5261,215 +5272,287 @@ function createForests() {
 
             // ضبط الأوراق
             if (isPineForest) {
-                dummy.position.set(tx, 90, tz); // رفع الأوراق للأعلى
-                dummy.updateMatrix();
-                iPines.setMatrixAt(treeIndex, dummy.matrix);
-                // إخفاء البلوط لهذه الشجرة (تصغيره للصفر)
-                dummy.scale.set(0, 0, 0);
-                dummy.updateMatrix();
-                iOaks.setMatrixAt(treeIndex, dummy.matrix);
+              dummy.position.set(tx, 90, tz); // رفع الأوراق للأعلى
+              dummy.updateMatrix();
+              iPines.setMatrixAt(treeIndex, dummy.matrix);
+              // إخفاء البلوط لهذه الشجرة (تصغيره للصفر)
+              dummy.scale.set(0, 0, 0);
+              dummy.updateMatrix();
+              iOaks.setMatrixAt(treeIndex, dummy.matrix);
             } else {
-                dummy.position.set(tx, 100, tz);
-                dummy.updateMatrix();
-                iOaks.setMatrixAt(treeIndex, dummy.matrix);
-                // إخفاء الصنوبر
-                dummy.scale.set(0, 0, 0);
-                dummy.updateMatrix();
-                iPines.setMatrixAt(treeIndex, dummy.matrix);
+              dummy.position.set(tx, 100, tz);
+              dummy.updateMatrix();
+              iOaks.setMatrixAt(treeIndex, dummy.matrix);
+              // إخفاء الصنوبر
+              dummy.scale.set(0, 0, 0);
+              dummy.updateMatrix();
+              iPines.setMatrixAt(treeIndex, dummy.matrix);
             }
 
             treeIndex++;
+          }
         }
-    }
 
-    // تحديث المصفوفات لتظهر في المشهد
-    iTrunks.instanceMatrix.needsUpdate = true;
-    iPines.instanceMatrix.needsUpdate = true;
-    iOaks.instanceMatrix.needsUpdate = true;
-}
+        // تحديث المصفوفات لتظهر في المشهد
+        iTrunks.instanceMatrix.needsUpdate = true;
+        iPines.instanceMatrix.needsUpdate = true;
+        iOaks.instanceMatrix.needsUpdate = true;
+      }
 
-// دالة مساعدة لإضافة الأيقونات (فصلناها للترتيب)
-function addForestLabelAndIcons(group) {
-    // النص (غابة)
-    const txtC = document.createElement('canvas');
-    txtC.width = 256; txtC.height = 64;
-    const tCtx = txtC.getContext('2d');
-    tCtx.font = "bold 40px 'Cairo'";
-    tCtx.fillStyle = "#4CAF50";
-    tCtx.textAlign = "center";
-    tCtx.fillText("غابة", 128, 45);
-    const lbl = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(txtC), transparent: true }));
-    lbl.position.set(0, 500, 0);
-    lbl.scale.set(600, 300, 1);
-    group.add(lbl);
-
-    // أيقونة الفأس
-    const iconC = document.createElement('canvas');
-    iconC.width = 128; iconC.height = 128;
-    const iCtx = iconC.getContext('2d');
-    iCtx.shadowColor = "rgba(0,0,0,0.5)"; iCtx.shadowBlur = 10;
-    const grad = iCtx.createLinearGradient(0, 0, 0, 128);
-    grad.addColorStop(0, "#4CAF50"); grad.addColorStop(1, "#1B5E20");
-    iCtx.beginPath(); iCtx.arc(64, 64, 55, 0, Math.PI * 2);
-    iCtx.fillStyle = grad; iCtx.fill();
-    iCtx.lineWidth = 4; iCtx.strokeStyle = "#FFD700"; iCtx.stroke();
-    iCtx.fillStyle = "#fff"; iCtx.font = '60px "Material Icons"';
-    iCtx.textAlign = "center"; iCtx.textBaseline = "middle";
-    iCtx.fillText('\uea42', 64, 64);
-    
-    const icon = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(iconC), transparent: true, depthTest: false }));
-    icon.position.set(0, 350, 0);
-    icon.scale.set(300, 300, 1);
-    icon.visible = false;
-    icon.userData = { isIcon: true, parentTarget: group, baseY: 350, animOffset: Math.random() * 100 };
-    group.add(icon);
-    group.icon = icon;
-
-    // أيقونة الإشغال
-    const occC = document.createElement('canvas');
-    occC.width = 64; occC.height = 64;
-    const oCtx = occC.getContext('2d');
-    oCtx.fillStyle = "red"; oCtx.font = '50px "Material Icons"';
-    oCtx.textAlign = "center"; oCtx.textBaseline = "middle";
-    oCtx.fillText('\ue332', 32, 32);
-    const occIcon = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(occC), transparent: true, depthTest: false }));
-    occIcon.position.set(0, 450, 0);
-    occIcon.scale.set(200, 200, 1);
-    occIcon.visible = false;
-    group.add(occIcon);
-    group.occupancyIcon = occIcon;
-}
-
-// تشغيل الدالة
-createForests();
-  // --- 9. المناجم (Mines) - نسخة الأداء العالي (InstancedMesh) ---
-const mines = [];
-
-function initMinesSystem() {
-    // إعدادات الأعداد
-    const goldCount = 200;
-    const silverCount = 200;
-    const totalMines = goldCount + silverCount;
-
-    // 1. هندسة المنجم (Dodecahedron) - شكل واحد للجميع
-    const mineGeo = new THREE.DodecahedronGeometry(40);
-    const mineMat = new THREE.MeshStandardMaterial({ roughness: 0.4, metalness: 0.6 });
-
-    // 2. إنشاء الـ InstancedMesh (أمر رسم واحد لكل المناجم)
-    const iMines = new THREE.InstancedMesh(mineGeo, mineMat, totalMines);
-    iMines.castShadow = true;
-    iMines.receiveShadow = true;
-    scene.add(iMines);
-
-    const dummy = new THREE.Object3D();
-    const colorGold = new THREE.Color(0xffd700);
-    const colorSilver = new THREE.Color(0xc0c0c0);
-
-    let index = 0;
-
-    // دالة داخلية لإنشاء مجموعة المنجم (المنطقية)
-    function createMineGroup(type, idx) {
-        // استخدام seededRandom الموجودة في كودك الأصلي
-        const theta = seededRandom() * Math.PI * 2;
-        const r = 10000 + seededRandom() * 180000;
-        const x = Math.cos(theta) * r;
-        const z = Math.sin(theta) * r;
-        const y = 20;
-
-        // وضع الشكل البصري في الـ InstancedMesh
-        dummy.position.set(x, y, z);
-        dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
-        dummy.scale.set(5, 5, 5); // تكبير الحجم
-        dummy.updateMatrix();
-        
-        // ضبط الموقع واللون في المصفوفة الموحدة
-        iMines.setMatrixAt(idx, dummy.matrix);
-        iMines.setColorAt(idx, type === 'gold' ? colorGold : colorSilver);
-
-        // إنشاء المجموعة المنطقية (للتفاعل والنقر فقط - غير مرئية)
-        const group = new THREE.Group();
-        group.position.set(x, 0, z); // الموقع على الأرض
-        group.userData = { type: type, isMine: true, id: `mine_${type}_${idx}` };
-
-        // هيت بوكس شفاف للنقر
-        const hitBox = new THREE.Mesh(
-            new THREE.BoxGeometry(200, 200, 200),
-            new THREE.MeshBasicMaterial({ visible: false })
+      // دالة مساعدة لإضافة الأيقونات (فصلناها للترتيب)
+      function addForestLabelAndIcons(group) {
+        // النص (غابة)
+        const txtC = document.createElement("canvas");
+        txtC.width = 256;
+        txtC.height = 64;
+        const tCtx = txtC.getContext("2d");
+        tCtx.font = "bold 40px 'Cairo'";
+        tCtx.fillStyle = "#4CAF50";
+        tCtx.textAlign = "center";
+        tCtx.fillText("غابة", 128, 45);
+        const lbl = new THREE.Sprite(
+          new THREE.SpriteMaterial({
+            map: new THREE.CanvasTexture(txtC),
+            transparent: true,
+          }),
         );
-        hitBox.position.y = 100;
-        group.add(hitBox);
+        lbl.position.set(0, 500, 0);
+        lbl.scale.set(900, 600, 1);
+        group.add(lbl);
 
-        // إضافة النصوص والأيقونات (تظهر عند النقر)
-        addMineLabelAndIcons(group, type);
+        // أيقونة الفأس
+        const iconC = document.createElement("canvas");
+        iconC.width = 128;
+        iconC.height = 128;
+        const iCtx = iconC.getContext("2d");
+        iCtx.shadowColor = "rgba(0,0,0,0.5)";
+        iCtx.shadowBlur = 10;
+        const grad = iCtx.createLinearGradient(0, 0, 0, 128);
+        grad.addColorStop(0, "#4CAF50");
+        grad.addColorStop(1, "#1B5E20");
+        iCtx.beginPath();
+        iCtx.arc(64, 64, 55, 0, Math.PI * 2);
+        iCtx.fillStyle = grad;
+        iCtx.fill();
+        iCtx.lineWidth = 4;
+        iCtx.strokeStyle = "#FFD700";
+        iCtx.stroke();
+        iCtx.fillStyle = "#fff";
+        iCtx.font = '60px "Material Icons"';
+        iCtx.textAlign = "center";
+        iCtx.textBaseline = "middle";
+        iCtx.fillText("\uea42", 64, 64);
 
-        scene.add(group);
-        mines.push(group);
-    }
+        const icon = new THREE.Sprite(
+          new THREE.SpriteMaterial({
+            map: new THREE.CanvasTexture(iconC),
+            transparent: true,
+            depthTest: false,
+          }),
+        );
+        icon.position.set(0, 700, 0);
+        icon.scale.set(1000, 1000, 1);
+        icon.visible = false;
+        icon.userData = {
+          isIcon: true,
+          parentTarget: group,
+          baseY: 350,
+          animOffset: Math.random() * 100,
+        };
+        group.add(icon);
+        group.icon = icon;
 
-    // إنشاء مناجم الذهب
-    for (let i = 0; i < goldCount; i++) {
-        createMineGroup('gold', index++);
-    }
-    // إنشاء مناجم الفضة
-    for (let i = 0; i < silverCount; i++) {
-        createMineGroup('silver', index++);
-    }
+        // أيقونة الإشغال
+        const occC = document.createElement("canvas");
+        occC.width = 64;
+        occC.height = 64;
+        const oCtx = occC.getContext("2d");
+        oCtx.fillStyle = "red";
+        oCtx.font = '50px "Material Icons"';
+        oCtx.textAlign = "center";
+        oCtx.textBaseline = "middle";
+        oCtx.fillText("\ue332", 32, 32);
+        const occIcon = new THREE.Sprite(
+          new THREE.SpriteMaterial({
+            map: new THREE.CanvasTexture(occC),
+            transparent: true,
+            depthTest: false,
+          }),
+        );
+        occIcon.position.set(0, 700, 0);
+        occIcon.scale.set(1000, 1000, 1);
+        occIcon.visible = false;
+        group.add(occIcon);
+        group.occupancyIcon = occIcon;
+      }
 
-    // تحديث المصفوفة لتظهر في المشهد
-    iMines.instanceMatrix.needsUpdate = true;
-    if (iMines.instanceColor) iMines.instanceColor.needsUpdate = true;
-}
+      // تشغيل الدالة
+      createForests();
+      // --- 9. المناجم (Mines) - نسخة الأداء العالي (InstancedMesh) ---
+      const mines = [];
 
-// دالة مساعدة لإضافة نصوص وأيقونات المناجم
-function addMineLabelAndIcons(group, type) {
-    // النص (Canvas Sprite)
-    const txtC = document.createElement('canvas');
-    txtC.width = 256; txtC.height = 64;
-    const tCtx = txtC.getContext('2d');
-    tCtx.font = "bold 40px 'Cairo'";
-    tCtx.fillStyle = type === 'gold' ? "#ffd700" : "#fff";
-    tCtx.textAlign = "center";
-    tCtx.fillText(type === 'gold' ? "منجم ذهب" : "منجم فضة", 128, 45);
-    const lbl = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(txtC), transparent: true }));
-    lbl.position.set(0, 90, 0);
-    lbl.scale.set(80, 20, 1);
-    group.add(lbl);
+      function initMinesSystem() {
+        // إعدادات الأعداد
+        const goldCount = 200;
+        const silverCount = 200;
+        const totalMines = goldCount + silverCount;
 
-    // الأيقونة (تظهر عند النقر)
-    const iconC = document.createElement('canvas');
-    iconC.width = 64; iconC.height = 64;
-    const iCtx = iconC.getContext('2d');
-    iCtx.beginPath(); iCtx.arc(32, 32, 30, 0, Math.PI * 2);
-    iCtx.fillStyle = "rgba(0,0,0,0.5)"; iCtx.fill();
-    iCtx.fillStyle = "#fff"; iCtx.font = '30px "Material Icons"';
-    iCtx.textAlign = "center"; iCtx.textBaseline = "middle";
-    iCtx.fillText('\ue558', 32, 32);
-    
-    const icon = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(iconC), transparent: true, depthTest: false }));
-    icon.position.set(0, 120, 0);
-    icon.scale.set(60, 60, 1);
-    icon.visible = false;
-    icon.userData = { isIcon: true, parentTarget: group };
-    group.add(icon);
-    group.icon = icon;
+        // 1. هندسة المنجم (Dodecahedron) - شكل واحد للجميع
+        const mineGeo = new THREE.DodecahedronGeometry(40);
+        const mineMat = new THREE.MeshStandardMaterial({
+          roughness: 0.4,
+          metalness: 0.6,
+        });
 
-    // أيقونة الإشغال (تظهر إذا كان المورد محجوزاً)
-    const occC = document.createElement('canvas');
-    occC.width = 64; occC.height = 64;
-    const oCtx = occC.getContext('2d');
-    oCtx.fillStyle = "red"; oCtx.font = '50px "Material Icons"';
-    oCtx.textAlign = "center"; oCtx.textBaseline = "middle";
-    oCtx.fillText('\ue332', 32, 32);
-    const occIcon = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(occC), transparent: true, depthTest: false }));
-    occIcon.position.set(0, 180, 0);
-    occIcon.scale.set(60, 60, 1);
-    occIcon.visible = false;
-    group.add(occIcon);
-    group.occupancyIcon = occIcon;
-}
+        // 2. إنشاء الـ InstancedMesh (أمر رسم واحد لكل المناجم)
+        const iMines = new THREE.InstancedMesh(mineGeo, mineMat, totalMines);
+        iMines.castShadow = true;
+        iMines.receiveShadow = true;
+        scene.add(iMines);
 
-// تشغيل النظام الجديد
-initMinesSystem();
+        const dummy = new THREE.Object3D();
+        const colorGold = new THREE.Color(0xffd700);
+        const colorSilver = new THREE.Color(0xc0c0c0);
+
+        let index = 0;
+
+        // دالة داخلية لإنشاء مجموعة المنجم (المنطقية)
+        function createMineGroup(type, idx) {
+          // استخدام seededRandom الموجودة في كودك الأصلي
+          const theta = seededRandom() * Math.PI * 2;
+          const r = 10000 + seededRandom() * 180000;
+          const x = Math.cos(theta) * r;
+          const z = Math.sin(theta) * r;
+          const y = 20;
+
+          // وضع الشكل البصري في الـ InstancedMesh
+          dummy.position.set(x, y, z);
+          dummy.rotation.set(
+            Math.random() * Math.PI,
+            Math.random() * Math.PI,
+            0,
+          );
+          dummy.scale.set(5, 5, 5); // تكبير الحجم
+          dummy.updateMatrix();
+
+          // ضبط الموقع واللون في المصفوفة الموحدة
+          iMines.setMatrixAt(idx, dummy.matrix);
+          iMines.setColorAt(idx, type === "gold" ? colorGold : colorSilver);
+
+          // إنشاء المجموعة المنطقية (للتفاعل والنقر فقط - غير مرئية)
+          const group = new THREE.Group();
+          group.position.set(x, 0, z); // الموقع على الأرض
+          group.userData = {
+            type: type,
+            isMine: true,
+            id: `mine_${type}_${idx}`,
+          };
+
+          // هيت بوكس شفاف للنقر
+          const hitBox = new THREE.Mesh(
+            new THREE.BoxGeometry(200, 200, 200),
+            new THREE.MeshBasicMaterial({ visible: false }),
+          );
+          hitBox.position.y = 100;
+          group.add(hitBox);
+
+          // إضافة النصوص والأيقونات (تظهر عند النقر)
+          addMineLabelAndIcons(group, type);
+
+          scene.add(group);
+          mines.push(group);
+        }
+
+        // إنشاء مناجم الذهب
+        for (let i = 0; i < goldCount; i++) {
+          createMineGroup("gold", index++);
+        }
+        // إنشاء مناجم الفضة
+        for (let i = 0; i < silverCount; i++) {
+          createMineGroup("silver", index++);
+        }
+
+        // تحديث المصفوفة لتظهر في المشهد
+        iMines.instanceMatrix.needsUpdate = true;
+        if (iMines.instanceColor) iMines.instanceColor.needsUpdate = true;
+      }
+
+      // دالة مساعدة لإضافة نصوص وأيقونات المناجم
+      function addMineLabelAndIcons(group, type) {
+        // النص (Canvas Sprite)
+        const txtC = document.createElement("canvas");
+        txtC.width = 256;
+        txtC.height = 64;
+        const tCtx = txtC.getContext("2d");
+        tCtx.font = "bold 40px 'Cairo'";
+        tCtx.fillStyle = type === "gold" ? "#ffd700" : "#fff";
+        tCtx.textAlign = "center";
+        tCtx.fillText(type === "gold" ? "منجم ذهب" : "منجم فضة", 128, 45);
+        const lbl = new THREE.Sprite(
+          new THREE.SpriteMaterial({
+            map: new THREE.CanvasTexture(txtC),
+            transparent: true,
+          }),
+        );
+        lbl.position.set(0, 90, 0);
+        lbl.scale.set(80, 20, 1);
+        group.add(lbl);
+
+        // الأيقونة (تظهر عند النقر)
+        const iconC = document.createElement("canvas");
+        iconC.width = 64;
+        iconC.height = 64;
+        const iCtx = iconC.getContext("2d");
+        iCtx.beginPath();
+        iCtx.arc(32, 32, 30, 0, Math.PI * 2);
+        iCtx.fillStyle = "rgba(0,0,0,0.5)";
+        iCtx.fill();
+        iCtx.fillStyle = "#fff";
+        iCtx.font = '30px "Material Icons"';
+        iCtx.textAlign = "center";
+        iCtx.textBaseline = "middle";
+        iCtx.fillText("\ue558", 32, 32);
+
+        const icon = new THREE.Sprite(
+          new THREE.SpriteMaterial({
+            map: new THREE.CanvasTexture(iconC),
+            transparent: true,
+            depthTest: false,
+          }),
+        );
+        icon.position.set(0, 120, 0);
+        icon.scale.set(60, 60, 1);
+        icon.visible = false;
+        icon.userData = { isIcon: true, parentTarget: group };
+        group.add(icon);
+        group.icon = icon;
+
+        // أيقونة الإشغال (تظهر إذا كان المورد محجوزاً)
+        const occC = document.createElement("canvas");
+        occC.width = 64;
+        occC.height = 64;
+        const oCtx = occC.getContext("2d");
+        oCtx.fillStyle = "red";
+        oCtx.font = '50px "Material Icons"';
+        oCtx.textAlign = "center";
+        oCtx.textBaseline = "middle";
+        oCtx.fillText("\ue332", 32, 32);
+        const occIcon = new THREE.Sprite(
+          new THREE.SpriteMaterial({
+            map: new THREE.CanvasTexture(occC),
+            transparent: true,
+            depthTest: false,
+          }),
+        );
+        occIcon.position.set(0, 180, 0);
+        occIcon.scale.set(60, 60, 1);
+        occIcon.visible = false;
+        group.add(occIcon);
+        group.occupancyIcon = occIcon;
+      }
+
+      // تشغيل النظام الجديد
+      initMinesSystem();
 
       function spawnMines(type, count) {
         for (let i = 0; i < count; i++) {
@@ -5482,8 +5565,6 @@ initMinesSystem();
           createMine(x, y, z, seededRandom() * Math.PI * 2, type, id);
         }
       }
-
-      
 
       // Listen for Occupancy Changes (Global)
       onSnapshot(collection(db, "map_occupancy"), (snapshot) => {
@@ -5516,7 +5597,7 @@ initMinesSystem();
           Math.random() * 240,
           Math.random() * 240,
           20 + Math.random() * 30,
-          10 + Math.random() * 20
+          10 + Math.random() * 20,
         );
       }
       const _stoneTex = new THREE.CanvasTexture(_castleCanvas);
@@ -5560,7 +5641,7 @@ initMinesSystem();
         function addCyl(rt, rb, h, x, y, z, mat) {
           const mesh = new THREE.Mesh(
             new THREE.CylinderGeometry(rt, rb, h, 16),
-            mat
+            mat,
           );
           mesh.position.set(x, y, z);
           mesh.castShadow = true;
@@ -5588,7 +5669,7 @@ initMinesSystem();
           addCyl(0.1, 0.1, 6, pos.x, 21, pos.z, _cMatWood);
           const flag = new THREE.Mesh(
             new THREE.PlaneGeometry(2, 1.2),
-            _cMatFlag
+            _cMatFlag,
           );
           flag.position.set(pos.x + 1, 23, pos.z);
           castleGroup.add(flag);
@@ -5641,7 +5722,7 @@ initMinesSystem();
           new THREE.SpriteMaterial({
             map: new THREE.CanvasTexture(canvas),
             transparent: true,
-          })
+          }),
         );
         nameSprite.position.set(0, 35, 0); // Position relative to new model height
         nameSprite.scale.set(40, 20, 1); // Scale relative to new model size
@@ -5703,7 +5784,7 @@ initMinesSystem();
           // =========================================================
           const myMiningQuery = query(
             collection(db, "mining_missions"),
-            where("userId", "==", user.uid)
+            where("userId", "==", user.uid),
           );
 
           // لاحظ إضافة كلمة async هنا 👇
@@ -5740,13 +5821,13 @@ initMinesSystem();
                 // جلب نسبة العقوبة من السيرفر
                 const penalty = await getActiveSiegePenalty(
                   user.uid,
-                  "economic"
+                  "economic",
                 );
 
                 // تطبيق الخصم (إذا كانت العقوبة 0 لن يتغير شيء)
                 if (penalty > 0) {
                   console.log(
-                    `تم تطبيق عقوبة اقتصادية بنسبة ${penalty * 100}%`
+                    `تم تطبيق عقوبة اقتصادية بنسبة ${penalty * 100}%`,
                   );
                 }
                 reward = Math.floor(reward * (1 - penalty));
@@ -5759,7 +5840,7 @@ initMinesSystem();
                   if (dailyStats.gold + reward > MAX_DAILY_RESOURCE)
                     cappedReward = Math.max(
                       0,
-                      MAX_DAILY_RESOURCE - dailyStats.gold
+                      MAX_DAILY_RESOURCE - dailyStats.gold,
                     );
                   if (cappedReward > 0) {
                     updateData.gold = increment(cappedReward);
@@ -5769,7 +5850,7 @@ initMinesSystem();
                   if (dailyStats.silver + reward > MAX_DAILY_RESOURCE)
                     cappedReward = Math.max(
                       0,
-                      MAX_DAILY_RESOURCE - dailyStats.silver
+                      MAX_DAILY_RESOURCE - dailyStats.silver,
                     );
                   if (cappedReward > 0) {
                     updateData.silver = increment(cappedReward);
@@ -5779,7 +5860,7 @@ initMinesSystem();
                   if (dailyStats.wood + reward > MAX_DAILY_RESOURCE)
                     cappedReward = Math.max(
                       0,
-                      MAX_DAILY_RESOURCE - dailyStats.wood
+                      MAX_DAILY_RESOURCE - dailyStats.wood,
                     );
                   if (cappedReward > 0) {
                     updateData.wood = increment(cappedReward);
@@ -5793,7 +5874,7 @@ initMinesSystem();
                   updateDoc(userRef, updateData);
                   if (mission.resourceId)
                     deleteDoc(
-                      doc(db, "map_occupancy", mission.resourceId)
+                      doc(db, "map_occupancy", mission.resourceId),
                     ).catch(() => {});
                   deleteDoc(doc(db, "mining_missions", docSnap.id));
                 } else {
@@ -5801,7 +5882,7 @@ initMinesSystem();
                   deleteDoc(doc(db, "mining_missions", docSnap.id));
                   if (mission.resourceId)
                     deleteDoc(
-                      doc(db, "map_occupancy", mission.resourceId)
+                      doc(db, "map_occupancy", mission.resourceId),
                     ).catch(() => {});
                 }
               }
@@ -5858,7 +5939,7 @@ initMinesSystem();
           const myAttacksQuery = query(
             collection(db, "attacks"),
             where("attackerId", "==", user.uid),
-            where("status", "==", "active")
+            where("status", "==", "active"),
           );
 
           // نراقب الهجمات التي قمت بإرسالها
@@ -5887,7 +5968,7 @@ initMinesSystem();
           // 2. مراقب التحذير من الهجوم (Incoming Attack Warning)
           const attacksQuery = query(
             collection(db, "attacks"),
-            where("targetId", "==", user.uid)
+            where("targetId", "==", user.uid),
           );
 
           let firstLoad = true;
@@ -5923,7 +6004,7 @@ initMinesSystem();
           const qRep = query(
             reportsRef,
             orderBy("timestamp", "desc"),
-            limit(1)
+            limit(1),
           );
           onSnapshot(qRep, (snap) => {
             snap.docChanges().forEach((change) => {
@@ -5958,7 +6039,7 @@ initMinesSystem();
               const castle = createCastleModel(
                 data.rank || 1,
                 data.username,
-                uid
+                uid,
               );
               castle.position.set(data.x, 0, data.z);
               scene.add(castle);
@@ -6000,7 +6081,7 @@ initMinesSystem();
             map: new THREE.CanvasTexture(canvas),
             transparent: true,
             depthTest: false,
-          })
+          }),
         );
         sprite.scale.set(200, 25, 1);
         sprite.position.set(0, -5000, 0);
@@ -6023,7 +6104,7 @@ initMinesSystem();
           2,
           2,
           canvas.width * Math.min(percentage, 1) - 4,
-          canvas.height - 4
+          canvas.height - 4,
         );
         progressBarSprite.material.map.needsUpdate = true;
       }
@@ -6050,7 +6131,7 @@ initMinesSystem();
         // نحسب القوافل النشطة في السيرفر (سنحتاج لقراءة هذا الرقم، لكن سنعتمد على المصفوفة مؤقتاً)
         if (activeCaravans.length >= maxCaravans) {
           return alert(
-            `لقد وصلت للحد الأقصى للقوافل (${maxCaravans}) لمستوى قلعتك.`
+            `لقد وصلت للحد الأقصى للقوافل (${maxCaravans}) لمستوى قلعتك.`,
           );
         }
 
@@ -6075,7 +6156,7 @@ initMinesSystem();
         const end = new THREE.Vector3(
           targetObject.position.x,
           targetObject.position.y,
-          targetObject.position.z
+          targetObject.position.z,
         );
         const dist = startPos.distanceTo(end);
 
@@ -6105,7 +6186,7 @@ initMinesSystem();
         const caravan = new THREE.Group();
         const body = new THREE.Mesh(
           new THREE.BoxGeometry(20, 15, 30),
-          mineWoodMat
+          mineWoodMat,
         );
         body.position.y = 15;
         caravan.add(body);
@@ -6115,7 +6196,7 @@ initMinesSystem();
         const points = [startPos, end];
         const line = new THREE.Line(
           new THREE.BufferGeometry().setFromPoints(points),
-          new THREE.LineBasicMaterial({ color: 0x00ff00 })
+          new THREE.LineBasicMaterial({ color: 0x00ff00 }),
         );
         scene.add(line);
 
@@ -6139,12 +6220,13 @@ initMinesSystem();
       const raycaster = new THREE.Raycaster();
       const mouse = new THREE.Vector2();
       window.addEventListener("mousedown", (e) => {
-        if (
-          e.target.closest(
-            "#game-navbar, #ui-container, .modal, #sidebar-container, #mobile-controls, #castle-controls-panel"
-          )
-        )
-          return;
+  // الحل الجذري: إذا لم يكن العنصر المضغوط هو الـ Canvas (اللعبة)، لا تفعل شيئاً
+  if (e.target.tagName !== "CANVAS") return;
+
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+
         mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
@@ -6187,7 +6269,7 @@ initMinesSystem();
 
         const castleIntersect = raycaster.intersectObjects(
           Object.values(otherCastles),
-          true
+          true,
         );
         if (castleIntersect.length > 0) {
           let target = castleIntersect[0].object;
@@ -6224,6 +6306,7 @@ initMinesSystem();
       // --- 15. منطق نافذة التطوير الجديد ---
 
       window.openUpgradeModal = () => {
+          resetInputKeys();
         if (!currentUser || !userDocData) return;
         if (userDocData.upgradeEndTime) {
           alert("القلعة قيد التطوير بالفعل!");
@@ -6238,9 +6321,8 @@ initMinesSystem();
         let woodCost = 0;
         if (lvl >= 10) woodCost = 2000000 * Math.pow(3, lvl - 10);
 
-        document.getElementById(
-          "upg-next-lvl"
-        ).innerText = `Level ${lvl} ➔ Level ${nextLvl}`;
+        document.getElementById("upg-next-lvl").innerText =
+          `Level ${lvl} ➔ Level ${nextLvl}`;
         document.getElementById("upg-time").innerText = `${
           BASE_UPGRADE_TIME_MIN * lvl
         } دقيقة`;
@@ -6415,6 +6497,18 @@ initMinesSystem();
 
       // التعامل مع أزرار الموبايل
       const mobileKeys = { up: false, down: false, left: false, right: false };
+       // ... (بعد تعريف mobileKeys مباشرة)
+
+      // --- دالة إيقاف الحركة (تضاف هنا) ---
+      function resetInputKeys() {
+        // تصفير مفاتيح الكيبورد
+        for (let key in keys) keys[key] = false;
+        // تصفير أزرار الموبايل
+        mobileKeys.up = false;
+        mobileKeys.down = false;
+        mobileKeys.left = false;
+        mobileKeys.right = false;
+      }
       const attachMobileEvents = (id, key) => {
         const btn = document.getElementById(id);
         const start = (e) => {
@@ -6454,7 +6548,7 @@ initMinesSystem();
             // ثم نحذفها بعد قليل أو نتركها للأرشيف (يفضل الحذف للتنظيف)
             setTimeout(
               () => deleteDoc(doc(db, "attacks", army.attackDocId)),
-              2000
+              2000,
             );
           } catch (e) {}
         }
@@ -6509,7 +6603,7 @@ initMinesSystem();
               // --- هام جداً: إعادة الجيش المنتصر ---
               // نقوم بإرجاع الجنود الذين تم خصمهم عند بداية الهجوم
               for (const [unitKey, count] of Object.entries(
-                army.unitsPayload
+                army.unitsPayload,
               )) {
                 // يمكنك هنا وضع نسبة خسارة (مثلاً يرجع 90% فقط)
                 // لكن حالياً سنعيدهم كلهم كما طلبت
@@ -6531,11 +6625,11 @@ initMinesSystem();
               });
 
               alert(
-                `🎉 انتصار! جيشك دمر العدو وعاد للقلعة محملاً بـ ${lootGold} ذهب.`
+                `🎉 انتصار! جيشك دمر العدو وعاد للقلعة محملاً بـ ${lootGold} ذهب.`,
               );
             } else {
               alert(
-                `☠️ هزيمة! جيشك تم تدميره بالكامل على يد دفاعات العدو ولم يعد أحد.`
+                `☠️ هزيمة! جيشك تم تدميره بالكامل على يد دفاعات العدو ولم يعد أحد.`,
               );
             }
           }
@@ -6687,8 +6781,8 @@ initMinesSystem();
         if (
           confirm(
             `نسبة العقوبة المحتسبة: ${(penaltyRate * 100).toFixed(
-              0
-            )}%\nهل تريد فرض الحصار؟`
+              0,
+            )}%\nهل تريد فرض الحصار؟`,
           )
         ) {
           try {
@@ -6779,7 +6873,7 @@ initMinesSystem();
               c.mesh.rotation.y += Math.PI;
               if (c.resourceId)
                 deleteDoc(doc(db, "map_occupancy", c.resourceId)).catch(
-                  () => {}
+                  () => {},
                 );
             }
           } else if (c.state === "RETURN") {
@@ -6797,7 +6891,7 @@ initMinesSystem();
           const pos = new THREE.Vector3().lerpVectors(
             c.start,
             c.end,
-            c.progress
+            c.progress,
           );
           pos.y = Math.max(pos.y, 15);
           c.mesh.position.copy(pos);
@@ -6820,7 +6914,7 @@ initMinesSystem();
             const pos = new THREE.Vector3().lerpVectors(
               army.start,
               army.end,
-              army.progress
+              army.progress,
             );
             pos.y += Math.sin(army.progress * Math.PI) * 100;
             army.mesh.position.copy(pos);
@@ -6907,7 +7001,7 @@ initMinesSystem();
           // الدخول في وضع ملء الشاشة
           document.documentElement.requestFullscreen().catch((err) => {
             console.log(
-              `Error attempting to enable full-screen mode: ${err.message}`
+              `Error attempting to enable full-screen mode: ${err.message}`,
             );
           });
         } else {
@@ -6920,4 +7014,5 @@ initMinesSystem();
     </script>
   </body>
 </html>
+
 
