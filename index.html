@@ -6985,6 +6985,71 @@ fpsDiv.style.zIndex = "10000";
 fpsDiv.style.pointerEvents = "none"; // مهم جداً: يمنع تداخل اللمس مع اللعبة
 fpsDiv.innerText = "FPS: 60";
 document.body.appendChild(fpsDiv);
+      // =========================================================
+// [جديد] زر العودة للقلعة (Return to Castle Button)
+// =========================================================
+
+// 1. إنشاء الزر ديناميكياً
+const returnBtn = document.createElement("div");
+returnBtn.id = "return-castle-btn";
+// استخدام أيقونة 'my_location' أو 'gps_fixed' من جوجل
+returnBtn.innerHTML = '<span class="material-icons" style="font-size: 28px; color: #f1c40f;">my_location</span>';
+
+// 2. تطبيق التنسيق (CSS via JS)
+Object.assign(returnBtn.style, {
+    position: "fixed",
+    bottom: "10px",       // ارتفاع مناسب لتجنب التداخل مع أزرار التحكم
+    left: "50%",
+    transform: "translateX(-50%)", // توسيط دقيق
+    borderRadius: "50%",  // دائري
+    display: "none",      // مخفي افتراضياً
+    justifyContent: "center",
+    alignItems: "center",
+    cursor: "pointer",
+    zIndex: "1900",       // فوق عناصر اللعبة
+    transition: "all 0.3s ease"
+});
+
+// تأثير عند التحويم (Hover) للكمبيوتر
+returnBtn.onmouseover = () => { returnBtn.style.transform = "translateX(-50%) scale(1.1)"; };
+returnBtn.onmouseleave = () => { returnBtn.style.transform = "translateX(-50%) scale(1)"; };
+
+// إضافة الزر للصفحة
+document.body.appendChild(returnBtn);
+
+// 3. وظيفة النقر: العودة للقلعة
+returnBtn.addEventListener("click", (e) => {
+    // منع انتشار النقر للعبة (كي لا تتحرك القلعة أو تفتح قوائم)
+    e.stopPropagation();
+    
+    if (myCastleMesh) {
+        // نقل الهدف (Target) إلى موقع القلعة
+        controls.target.copy(myCastleMesh.position);
+        
+        // نقل الكاميرا فوق القلعة بمسافة مناسبة
+        camera.position.set(
+            myCastleMesh.position.x, 
+            3000, // ارتفاع الكاميرا
+            myCastleMesh.position.z + 4000 // مسافة للخلف
+        );
+        controls.update();
+    }
+});
+
+// 4. دالة التحقق من المسافة (توضع داخل animate)
+function checkDistanceAndShowButton() {
+    if (!myCastleMesh) return;
+
+    // حساب المسافة بين المكان الذي تنظر إليه الكاميرا وموقع قلعتك
+    const dist = controls.target.distanceTo(myCastleMesh.position);
+
+    // إذا ابتعدت أكثر من 3000 وحدة، اظهر الزر
+    if (dist > 3000) {
+        returnBtn.style.display = "flex";
+    } else {
+        returnBtn.style.display = "none";
+    }
+}
       // --- 16. حلقة التحريك الرئيسية (Animation Loop) ---
       function animate() {
         requestAnimationFrame(animate);
@@ -7157,6 +7222,7 @@ document.body.appendChild(fpsDiv);
             }
           });
         }
+            if (typeof checkDistanceAndShowButton === "function") checkDistanceAndShowButton();
         controls.update();
 
         renderer.render(scene, camera);
@@ -7183,6 +7249,7 @@ document.body.appendChild(fpsDiv);
     </script>
   </body>
 </html>
+
 
 
 
