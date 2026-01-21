@@ -4155,37 +4155,36 @@
         if (currentUser) mobileControls.style.display = "flex";
       };
 
-      // بيانات الوحدات
       const UNIT_DATA = {
-        infantry: {
-          name: "مشاة",
-          baseAtk: 5,
-          baseDef: 10,
-          costGold: 100,
-          costSilver: 50,
-        },
-        archers: {
-          name: "رماة",
-          baseAtk: 15,
-          baseDef: 5,
-          costGold: 150,
-          costSilver: 100,
-        },
-        cavalry: {
-          name: "فرسان",
-          baseAtk: 25,
-          baseDef: 15,
-          costGold: 300,
-          costSilver: 200,
-        },
-        siege: {
-          name: "مركبات",
-          baseAtk: 50,
-          baseDef: 30,
-          costGold: 1000,
-          costSilver: 800,
-        },
-      };
+  infantry: {
+    name: "مشاة",
+    baseAtk: 5,
+    baseDef: 10,
+    costGold: 5000,   // كان 100
+    costSilver: 3000, // كان 50
+  },
+  archers: {
+    name: "رماة",
+    baseAtk: 15,
+    baseDef: 5,
+    costGold: 8000,   // كان 150
+    costSilver: 6000,
+  },
+  cavalry: {
+    name: "فرسان",
+    baseAtk: 25,
+    baseDef: 15,
+    costGold: 15000,  // كان 300
+    costSilver: 10000,
+  },
+  siege: {
+    name: "مركبات",
+    baseAtk: 50,
+    baseDef: 30,
+    costGold: 50000,  // كان 1000
+    costSilver: 40000,
+  },
+};
 
       let currentTab = "infantry";
 
@@ -7176,6 +7175,7 @@ document.body.appendChild(fpsDiv);
     </script>
   </body>
 </html>
+
 
 
 
