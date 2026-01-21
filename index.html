@@ -5033,10 +5033,10 @@
         }
       };
 
-      // --- 5. المصادقة والتحكم ---
+     // --- 5. المصادقة والتحكم ---
       if (loginBtn) {
         loginBtn.addEventListener("click", () => {
-          toggleFullScreen();
+          // تم حذف toggleFullScreen() من هنا لأنها تسبب تعارضاً مع نافذة جوجل
           const provider = new GoogleAuthProvider();
           signInWithPopup(auth, provider)
             .then(() => {
@@ -7176,6 +7176,7 @@ document.body.appendChild(fpsDiv);
     </script>
   </body>
 </html>
+
 
 
 
