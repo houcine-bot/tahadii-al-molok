@@ -2889,6 +2889,14 @@
       >
         <span class="material-icons" style="color: #e74c3c">close</span> إغلاق
       </button>
+      <!-- ... الأزرار الموجودة سابقاً ... -->
+<button
+  class="castle-action-btn"
+  onclick="activateTeleportMode(); document.getElementById('castle-controls-panel').style.display='none'"
+>
+  <span class="material-icons">travel_explore</span> نقل القلعة
+</button>
+<!-- ... زر الإغلاق ... -->
     </div>
 
     <!-- النافذة المنبثقة: الجيش -->
@@ -6236,84 +6244,112 @@
       const raycaster = new THREE.Raycaster();
       const mouse = new THREE.Vector2();
       window.addEventListener("mousedown", (e) => {
-  // الحل الجذري: إذا لم يكن العنصر المضغوط هو الـ Canvas (اللعبة)، لا تفعل شيئاً
-  if (e.target.tagName !== "CANVAS") return;
+    // الحل الجذري: إذا لم يكن العنصر المضغوط هو الـ Canvas (اللعبة)، لا تفعل شيئاً
+    if (e.target.tagName !== "CANVAS") return;
 
-        mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-        raycaster.setFromCamera(mouse, camera);
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
 
-        const allResIcons = [
-          ...mines.map((m) => m.icon).filter((i) => i.visible),
-          ...forests.map((f) => f.icon).filter((i) => i.visible),
-        ];
-        const hitResIcon = raycaster.intersectObjects(allResIcons);
-        if (hitResIcon.length > 0) {
-          spawnCaravan(hitResIcon[0].object.userData.parentTarget);
-          return;
+    // =========================================================
+    // [جديد] منطق نقل القلعة (الأولوية القصوى)
+    // =========================================================
+    if (isTeleporting) {
+        // التحقق من تقاطع الشعاع مع الأرض (terrain)
+        // ملاحظة: يجب أن يكون المتغير terrain معرفاً في النطاق العام (وهو موجود في كودك الأصلي)
+        const hitTerrain = raycaster.intersectObject(terrain);
+        
+        if (hitTerrain.length > 0) {
+            const point = hitTerrain[0].point;
+            // تنفيذ النقل إلى النقطة التي تم الضغط عليها
+            executeTeleport(point.x, point.z);
         }
+        // إيقاف أي تفاعل آخر (مثل فتح القوائم) أثناء وضع النقل
+        return;
+    }
+    // =========================================================
 
-        const hitMine = raycaster.intersectObjects(mines, true);
-        if (hitMine.length > 0) {
-          let p = hitMine[0].object;
-          while (p.parent && !p.userData.isMine) p = p.parent;
-          mines.forEach((m) => (m.icon.visible = false));
-          forests.forEach((f) => (f.icon.visible = false));
-          p.icon.visible = true;
-          // Hide panel if clicking on mine
-          castleControlsPanel.style.display = "none";
-          if (currentUser) mobileControls.style.display = "flex"; // Restore buttons
-          return;
-        }
+    // منطق إرسال القوافل (Caravans) - النقر على الأيقونات العائمة
+    const allResIcons = [
+        ...mines.map((m) => m.icon).filter((i) => i.visible),
+        ...forests.map((f) => f.icon).filter((i) => i.visible),
+    ];
+    const hitResIcon = raycaster.intersectObjects(allResIcons);
+    if (hitResIcon.length > 0) {
+        spawnCaravan(hitResIcon[0].object.userData.parentTarget);
+        return;
+    }
 
-        const hitForest = raycaster.intersectObjects(forests, true);
-        if (hitForest.length > 0) {
-          let p = hitForest[0].object;
-          while (p.parent && !p.userData.isForest) p = p.parent;
-          mines.forEach((m) => (m.icon.visible = false));
-          forests.forEach((f) => (f.icon.visible = false));
-          p.icon.visible = true;
-          // Hide panel if clicking on forest
-          castleControlsPanel.style.display = "none";
-          if (currentUser) mobileControls.style.display = "flex"; // Restore buttons
-          return;
-        }
-
-        const castleIntersect = raycaster.intersectObjects(
-          Object.values(otherCastles),
-          true,
-        );
-        if (castleIntersect.length > 0) {
-          let target = castleIntersect[0].object;
-          while (target.parent && !target.userData.isCastle)
-            target = target.parent;
-
-          if (target.userData.isCastle) {
-            // IF I CLICK MY OWN CASTLE
-            if (currentUser && target.userData.uid === currentUser.uid) {
-              // Show the menu
-              castleControlsPanel.style.display = "flex";
-              // HIDE MOBILE CONTROLS
-              mobileControls.style.display = "none";
-            }
-            // IF I CLICK ENEMY CASTLE
-            else if (currentUser && target.userData.uid !== currentUser.uid) {
-              // Hide my panel if open
-              castleControlsPanel.style.display = "none";
-              if (currentUser) mobileControls.style.display = "flex";
-              // Open action menu
-              openActionMenu(target.userData.uid);
-            }
-          }
-          return;
-        }
-
-        // Clicked on empty space/terrain -> Hide everything
+    // منطق النقر على المناجم (لإظهار الأيقونة)
+    const hitMine = raycaster.intersectObjects(mines, true);
+    if (hitMine.length > 0) {
+        let p = hitMine[0].object;
+        while (p.parent && !p.userData.isMine) p = p.parent;
+        
+        // إخفاء جميع الأيقونات الأخرى
         mines.forEach((m) => (m.icon.visible = false));
         forests.forEach((f) => (f.icon.visible = false));
+        
+        // إظهار أيقونة هذا المنجم
+        p.icon.visible = true;
+        
+        // إخفاء القوائم الأخرى
         castleControlsPanel.style.display = "none";
         if (currentUser) mobileControls.style.display = "flex"; // Restore buttons
-      });
+        return;
+    }
+
+    // منطق النقر على الغابات (لإظهار الأيقونة)
+    const hitForest = raycaster.intersectObjects(forests, true);
+    if (hitForest.length > 0) {
+        let p = hitForest[0].object;
+        while (p.parent && !p.userData.isForest) p = p.parent;
+        
+        mines.forEach((m) => (m.icon.visible = false));
+        forests.forEach((f) => (f.icon.visible = false));
+        
+        p.icon.visible = true;
+        
+        castleControlsPanel.style.display = "none";
+        if (currentUser) mobileControls.style.display = "flex";
+        return;
+    }
+
+    // منطق النقر على القلاع (صديقة أو عدو)
+    const castleIntersect = raycaster.intersectObjects(
+        Object.values(otherCastles),
+        true,
+    );
+    if (castleIntersect.length > 0) {
+        let target = castleIntersect[0].object;
+        while (target.parent && !target.userData.isCastle)
+            target = target.parent;
+
+        if (target.userData.isCastle) {
+            // الحالة 1: ضغطت على قلعتي
+            if (currentUser && target.userData.uid === currentUser.uid) {
+                // إظهار قائمة التحكم بالقلعة
+                castleControlsPanel.style.display = "flex";
+                // إخفاء أزرار الموبايل لمنع التداخل
+                mobileControls.style.display = "none";
+            }
+            // الحالة 2: ضغطت على قلعة عدو
+            else if (currentUser && target.userData.uid !== currentUser.uid) {
+                castleControlsPanel.style.display = "none";
+                if (currentUser) mobileControls.style.display = "flex";
+                // فتح قائمة الهجوم/التبرع
+                openActionMenu(target.userData.uid);
+            }
+        }
+        return;
+    }
+
+    // النقر في الفراغ (إلغاء التحديدات)
+    mines.forEach((m) => (m.icon.visible = false));
+    forests.forEach((f) => (f.icon.visible = false));
+    castleControlsPanel.style.display = "none";
+    if (currentUser) mobileControls.style.display = "flex"; // إعادة الأزرار
+});
 
       // --- 15. منطق نافذة التطوير الجديد ---
 
@@ -7398,9 +7434,76 @@ function checkAndStartTutorial() {
           }
         }
       };
+      // --- متغير لتحديد حالة النقل ---
+let isTeleporting = false;
+
+// --- دالة تفعيل وضع النقل ---
+window.activateTeleportMode = () => {
+    if (!currentUser || !userDocData) return;
+    
+    // 1. التحقق من تكلفة النقل (اختياري - هنا 50,000 ذهب)
+    const teleportCost = 50000;
+    if (userDocData.gold < teleportCost) {
+        alert(`عذراً، تكلفة نقل القلعة هي ${teleportCost.toLocaleString()} ذهب. ليس لديك ما يكفي!`);
+        return;
+    }
+
+    // 2. تفعيل الوضع وإظهار تنبيه
+    isTeleporting = true;
+    alert("📍 وضع النقل مفعل!\nاضغط الآن على أي مكان فارغ في الأرض لنقل قلعتك إليه.");
+    
+    // إخفاء القوائم لتسهيل الرؤية
+    if (mobileControls) mobileControls.style.display = 'none';
+};
+
+// --- دالة تنفيذ النقل ---
+window.executeTeleport = async (newX, newZ) => {
+    if (!currentUser) return;
+    
+    const teleportCost = 50000; // التكلفة
+
+    if (confirm(`هل أنت متأكد من نقل القلعة إلى هذا الموقع؟\nسيكلفك ذلك ${teleportCost.toLocaleString()} ذهب.`)) {
+        try {
+            // 1. تحديث الإحداثيات وخصم الذهب في قاعدة البيانات
+            await updateDoc(doc(db, "users", currentUser.uid), {
+                x: newX,
+                z: newZ,
+                gold: increment(-teleportCost)
+            });
+
+            // 2. إنهاء وضع النقل
+            isTeleporting = false;
+            
+            // 3. إعادة إظهار عناصر التحكم
+            if (mobileControls) mobileControls.style.display = 'flex';
+
+            alert("✅ تم نقل القلعة بنجاح!");
+            
+            // 4. تحريك الكاميرا للموقع الجديد فوراً
+            if (myCastleMesh) {
+                myCastleMesh.position.set(newX, 0, newZ);
+                camera.position.set(newX, 8000, newZ + 6000); // كاميرا فوق القلعة
+                controls.target.set(newX, 0, newZ);
+                controls.update();
+            }
+
+        } catch (e) {
+            console.error(e);
+            alert("حدث خطأ أثناء النقل: " + e.message);
+            isTeleporting = false;
+            if (mobileControls) mobileControls.style.display = 'flex';
+        }
+    } else {
+        // إلغاء النقل
+        isTeleporting = false;
+        if (mobileControls) mobileControls.style.display = 'flex';
+        alert("تم إلغاء النقل.");
+    }
+};
     </script>
   </body>
 </html>
+
 
 
 
