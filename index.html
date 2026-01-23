@@ -6677,21 +6677,6 @@ activateFullScreenOnFirstInteraction();
           myCastleMesh = null;
         }
       });
-          if (uiContainer) uiContainer.style.display = "flex";
-          if (loginForm) loginForm.style.display = "block";
-          if (navbar) navbar.style.display = "none";
-          if (mobileControls) mobileControls.style.display = "none";
-          if (document.getElementById("castle-controls-panel")) {
-            document.getElementById("castle-controls-panel").style.display =
-              "none";
-          }
-          if (typeof otherCastles !== "undefined") {
-            Object.values(otherCastles).forEach((c) => scene.remove(c));
-            for (let key in otherCastles) delete otherCastles[key];
-          }
-          myCastleMesh = null;
-        }
-      });
       const keys = {};
       window.onkeydown = (e) => (keys[e.code] = true);
       window.onkeyup = (e) => (keys[e.code] = false);
@@ -7947,6 +7932,7 @@ createRamadanStars();
     </script>
   </body>
 </html>
+
 
 
 
