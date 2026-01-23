@@ -7668,29 +7668,67 @@ function createRamadanStars() {
 
 // تشغيل النجوم عند التحميل
 createRamadanStars();
+      // --- 1. دالة الزر اليدوي (اتركها للقائمة الجانبية) ---
+window.toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch((err) => {
+            console.log(`Error: ${err.message}`);
+        });
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+    }
+};
+
+// --- 2. منطق شاشة البداية (تحديث) ---
+function initIntro() {
+    const splash = document.getElementById("splash-screen");
+    setTimeout(() => {
+        if(splash) {
+            splash.style.opacity = "0";
+            splash.style.pointerEvents = "none"; 
+            setTimeout(() => {
+                splash.style.display = "none";
+            }, 1500); 
+        }
+    }, 4000);
+}
+
+// --- 3. كود الإجبار التلقائي القوي (هذا هو الجديد) ---
+function activateFullScreenOnFirstInteraction() {
+    const triggerMode = () => {
+        const elem = document.documentElement;
+        
+        // محاولة التكبير لجميع المتصفحات (بما فيها آيفون)
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen().catch(() => {});
+        } else if (elem.webkitRequestFullscreen) { 
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) { 
+            elem.msRequestFullscreen();
+        }
+
+        // تشغيل الصوت
+        if (bgMusic && bgMusic.paused) {
+            bgMusic.volume = 0.4;
+            bgMusic.play().catch(() => {});
+        }
+
+        // حذف المستمعين (لتعمل مرة واحدة فقط)
+        document.removeEventListener('click', triggerMode);
+        document.removeEventListener('touchstart', triggerMode);
+        document.removeEventListener('keydown', triggerMode);
+    };
+
+    document.addEventListener('click', triggerMode);
+    document.addEventListener('touchstart', triggerMode); 
+    document.addEventListener('keydown', triggerMode);    
+}
+
+// تشغيل الدوال
+initIntro(); 
+activateFullScreenOnFirstInteraction();
     </script>
   </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
