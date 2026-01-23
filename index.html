@@ -3519,20 +3519,51 @@
       window.giftModal = document.getElementById("gift-modal");
       window.adminModal = document.getElementById("admin-modal");
 
-      // --- SPLASH SCREEN LOGIC ---
-      function initIntro() {
-        const splash = document.getElementById("splash-screen");
-        // Hide splash after 4 seconds
-        setTimeout(() => {
-          splash.style.opacity = "0";
-          splash.style.pointerEvents = "none"; // منع التفاعل أثناء الاختفاء
-          setTimeout(() => {
-            splash.style.display = "none";
-          }, 1500); // wait for fade out
-        }, 4000);
-      }
-      // Call immediately
-      initIntro();
+      // --- 1. منطق شاشة البداية (فقط للإخفاء البصري) ---
+function initIntro() {
+    const splash = document.getElementById("splash-screen");
+    // هذا الجزء فقط يخفي الشعار بعد 4 ثواني ولا علاقة له بملء الشاشة
+    setTimeout(() => {
+        if(splash) {
+            splash.style.opacity = "0";
+            splash.style.pointerEvents = "none"; 
+            setTimeout(() => {
+                splash.style.display = "none";
+            }, 1500); 
+        }
+    }, 4000);
+}
+
+// --- 2. منطق تفعيل ملء الشاشة عند "أول لمسة" في أي مكان ---
+function activateFullScreenOnFirstInteraction() {
+    
+    // هذه الدالة هي التي ستعمل
+    const triggerMode = () => {
+        // تفعيل وضع ملء الشاشة
+        toggleFullScreen();
+
+        // تشغيل الصوت (لأن المتصفح يسمح به الآن)
+        if (bgMusic && bgMusic.paused) {
+            bgMusic.volume = 0.4;
+            bgMusic.play().catch(() => {});
+        }
+
+        // مهم جداً: إزالة المراقبة بعد أول ضغطة لكي لا يعيد الأمر كل مرة
+        document.removeEventListener('click', triggerMode);
+        document.removeEventListener('touchstart', triggerMode);
+        document.removeEventListener('keydown', triggerMode);
+    };
+
+    // نضع المراقب على "document" يعني الصفحة كلها
+    // سيظل ينتظرك حتى تضغط، سواء اختفى السبلاش سكرين أم لا
+    document.addEventListener('click', triggerMode);
+    document.addEventListener('touchstart', triggerMode); 
+    document.addEventListener('keydown', triggerMode);    
+}
+
+// تشغيل الدوال
+initIntro(); 
+activateFullScreenOnFirstInteraction();
 
       // --- NEW: Deterministic Random for Map Sync ---
       let seed = 123456;
@@ -7640,6 +7671,7 @@ createRamadanStars();
     </script>
   </body>
 </html>
+
 
 
 
