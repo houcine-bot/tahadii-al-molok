@@ -2192,7 +2192,7 @@
     right: 20px; /* على اليمين */
     width: 70px;
     height: 70px;
-    z-index: 11000; /* طبقة عالية جداً */
+    z-index: 0; /* طبقة عالية جداً */
     cursor: pointer;
     display: flex;
     justify-content: center;
@@ -2273,21 +2273,23 @@
     <div class="stars-wrapper" id="ramadan-stars"></div>
 </div>
 
-<!-- نافذة حدث رمضان -->
-<div id="ramadan-modal" class="modal">
-    <div class="modal-content" style="width: 400px; text-align: center; border-color: #f1c40f;">
+<div id="ramadan-modal" class="modal" >
+    <div class="modal-content" style="width: 400px; text-align: center; border-color: #f1c40f;margin-top:50px">
         <div class="modal-header" style="background: linear-gradient(90deg, #1a1a1a, #2c3e50); border-bottom: 2px solid #f1c40f;">
             <h2 style="margin: 0; color: #f1c40f;">🌙 شهر رمضان المبارك</h2>
             <button class="close-modal" onclick="document.getElementById('ramadan-modal').style.display='none'">
                 <span class="material-icons">close</span>
             </button>
         </div>
-        <div style="padding: 40px; background: rgba(0,0,0,0.9);">
-            <span class="material-icons" style="font-size: 60px; color: #f1c40f; margin-bottom: 20px; animation: pulseEvent 2s infinite;">nights_stay</span>
-            <h2 style="color: #fff; font-family: 'Cairo'; margin-bottom: 10px;">حدث رمضان</h2>
-            <p style="color: #ccc; font-size: 18px;">قريباً في اللعبة...</p>
-            <p style="color: #f1c40f; font-size: 14px;">ترقبوا جوائز ومفاجآت خاصة!</p>
-        </div>
+        <div style="padding: 15px; background: rgba(0,0,0,0.95); overflow-y: auto; max-height: 70vh; width: 100%; box-sizing: border-box;">
+    <!-- تم تصغير الأيقونة من 60 إلى 40 -->
+    <span class="material-icons" style="font-size: 40px; color: #f1c40f; margin-bottom: 10px; animation: pulseEvent 2s infinite;">nights_stay</span>
+    
+    <!-- تم تصغير العناوين والنصوص -->
+    <h2 style="color: #fff; font-family: 'Cairo'; margin-bottom: 5px; font-size: 16px;">حدث رمضان</h2>
+    <p style="color: #ccc; font-size: 13px; margin: 5px 0;">قريباً في اللعبة...</p>
+    <p style="color: #f1c40f; font-size: 11px; margin: 0;">ترقبوا جوائز ومفاجآت خاصة!</p>
+</div>
     </div>
 </div>
     <!-- واجهة التحذير من الهجوم -->
@@ -7671,3 +7673,4 @@ createRamadanStars();
     </script>
   </body>
 </html>
+
