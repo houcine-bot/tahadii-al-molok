@@ -6585,7 +6585,7 @@ activateFullScreenOnFirstInteraction();
         }
       };
 
-      // --- كود المصادقة المعدل (لحل مشكلة زر المشرفين) ---
+      // --- كود المصادقة والتحكم (معدل بالكامل) ---
       onAuthStateChanged(auth, async (u) => {
         // تعريف العناصر
         const uiContainer = document.getElementById("ui-container");
@@ -6594,9 +6594,14 @@ activateFullScreenOnFirstInteraction();
         const mobileControls = document.getElementById("mobile-controls");
         const adminBtn = document.getElementById("admin-sidebar-btn");
         const splash = document.getElementById("splash-screen");
+        
+        // 🔥 تعريف الزر الجديد هنا 🔥
+        const navToggle = document.getElementById("nav-toggle-btn");
 
         if (u) {
-          // --- حالة تسجيل الدخول ---
+          // ==============================
+          // ✅ حالة تسجيل الدخول (Logged In)
+          // ==============================
           console.log("User Logged In:", u.email);
           currentUser = u;
           initEventSystem();
@@ -6610,13 +6615,15 @@ activateFullScreenOnFirstInteraction();
           if (navbar) navbar.style.display = "flex";
           if (mobileControls) mobileControls.style.display = "flex";
 
+          // 🔥🔥 (مهم جداً) إظهار زر إخفاء الشريط عند الدخول 🔥🔥
+          if (navToggle) navToggle.style.display = "flex";
+
           // 3. تحميل بيانات اللاعب
           handleUserProfile(u);
 
-          // 4. التحقق من الصلاحيات (أدمن أو مشرف) لإظهار الزر
+          // 4. التحقق من الصلاحيات (أدمن أو مشرف) لإظهار زر الإدارة
           if (adminBtn) {
-            // افتراضياً نخفي الزر حتى نتأكد
-            adminBtn.style.display = "none";
+            adminBtn.style.display = "none"; // إخفاء افتراضي
 
             const myEmail = u.email.toLowerCase();
             const adminEmail = ADMIN_EMAIL.toLowerCase();
@@ -6625,69 +6632,51 @@ activateFullScreenOnFirstInteraction();
               // هذا هو الأدمن الرئيسي
               adminBtn.style.display = "flex";
             } else {
-              // التحقق مما إذا كان مشرفاً في قاعدة البيانات
+              // التحقق مما إذا كان مشرفاً
               try {
                 const modRef = doc(db, "moderators", myEmail);
                 const modSnap = await getDoc(modRef);
                 if (modSnap.exists()) {
-                  adminBtn.style.display = "flex"; // إظهار الزر للمشرف
+                  adminBtn.style.display = "flex";
                 }
               } catch (e) {
                 console.error("Error checking moderator status:", e);
               }
             }
           }
+
         } else {
-          // --- حالة تسجيل الخروج ---
-          onAuthStateChanged(auth, async (u) => {
-            // ... تعريف المتغيرات ...
+          // ==============================
+          // ❌ حالة تسجيل الخروج (Logged Out)
+          // ==============================
+          console.log("User Logged Out");
+          currentUser = null;
+          userDocData = null;
 
-            if (u) {
-              // --- حالة تسجيل الدخول (أنت مسجل بالفعل) ---
-              console.log("User Logged In:", u.email);
-              currentUser = u;
+          // 1. إظهار شاشة الدخول
+          if (uiContainer) uiContainer.style.display = "flex";
+          if (loginForm) loginForm.style.display = "block";
 
-              // 1. تأكد أن واجهة الدخول مخفية
-              if (document.getElementById("ui-container")) {
-                document.getElementById("ui-container").style.display = "none";
-              }
+          // 2. إخفاء عناصر اللعبة
+          if (navbar) navbar.style.display = "none";
+          if (mobileControls) mobileControls.style.display = "none";
 
-              // إخفاء شاشة البداية (Splash)
-              const splash = document.getElementById("splash-screen");
-              if (splash) splash.style.display = "none";
+          // 🔥🔥 (مهم جداً) إخفاء زر إخفاء الشريط عند الخروج 🔥🔥
+          if (navToggle) navToggle.style.display = "none";
 
-              // إظهار اللعبة
-              if (navbar) navbar.style.display = "flex";
-              if (mobileControls) mobileControls.style.display = "flex";
+          // 3. إخفاء القوائم العائمة
+          if (document.getElementById("castle-controls-panel")) {
+            document.getElementById("castle-controls-panel").style.display = "none";
+          }
 
-              // تحميل البيانات
-              handleUserProfile(u);
-
-              // ... باقي كود التحقق من الآدمن ...
-            } else {
-              // --- حالة عدم تسجيل الدخول (جديد أو سجل خروج) ---
-              console.log("User Logged Out");
-              currentUser = null;
-              userDocData = null;
-
-              // >>> التعديل هنا: الآن فقط نظهر نافذة الدخول <<<
-              if (document.getElementById("ui-container")) {
-                document.getElementById("ui-container").style.display = "flex"; // إظهارها الآن
-              }
-
-              if (loginForm) loginForm.style.display = "block";
-              if (navbar) navbar.style.display = "none";
-              if (mobileControls) mobileControls.style.display = "none";
-
-              // تنظيف المشهد
-              if (typeof otherCastles !== "undefined") {
-                Object.values(otherCastles).forEach((c) => scene.remove(c));
-                for (let key in otherCastles) delete otherCastles[key];
-              }
-              myCastleMesh = null;
-            }
-          });
-
+          // 4. تنظيف المشهد (إزالة القلاع)
+          if (typeof otherCastles !== "undefined") {
+            Object.values(otherCastles).forEach((c) => scene.remove(c));
+            for (let key in otherCastles) delete otherCastles[key];
+          }
+          myCastleMesh = null;
+        }
+      });
           if (uiContainer) uiContainer.style.display = "flex";
           if (loginForm) loginForm.style.display = "block";
           if (navbar) navbar.style.display = "none";
@@ -7882,9 +7871,83 @@ function createRamadanStars() {
 
 // تشغيل النجوم عند التحميل
 createRamadanStars();
+      // =========================================================
+// 🟢 نظام إخفاء/إظهار الشريط العلوي (Navbar Toggler) - مصحح
+// =========================================================
+
+(function initNavbarToggler() {
+    // 1. تعريف دالة التبديل أولاً (لتجنب الخطأ ReferenceError)
+    window.toggleNavbar = function() {
+        document.body.classList.toggle('nav-hidden');
+    };
+
+    // 2. حقن تنسيقات CSS ديناميكياً
+    const style = document.createElement('style');
+    style.innerHTML = `
+        /* تنسيق الزر */
+        #nav-toggle-btn {
+            position: fixed;
+            top: 40px; /* أسفل النافبار */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 25px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid #f1c40f;
+            border-top: none;
+            border-radius: 0 0 15px 15px;
+            display: none; /* مخفي افتراضياً */
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 998; /* تحت النافبار */
+            backdrop-filter: blur(5px);
+            transition: top 0.4s ease-in-out, background 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        #nav-toggle-btn:hover {
+            background: rgba(241, 196, 15, 0.2);
+        }
+        #nav-toggle-btn span {
+            color: #f1c40f;
+            font-size: 24px;
+            transition: transform 0.4s;
+        }
+
+        /* كلاسات الحركة للشريط والزر */
+        #game-navbar { transition: top 0.4s ease-in-out; }
+        
+        /* حالة الإخفاء */
+        body.nav-hidden #game-navbar {
+            top: -100px !important;
+        }
+        body.nav-hidden #nav-toggle-btn {
+            top: 0 !important; /* يلتصق بأعلى الشاشة */
+            border-top: 1px solid #f1c40f;
+            border-radius: 0 0 10px 10px;
+            background: rgba(20, 20, 20, 0.95);
+        }
+        body.nav-hidden #nav-toggle-btn span {
+            transform: rotate(180deg); /* تدوير السهم */
+        }
+    `;
+    document.head.appendChild(style);
+
+    // 3. إنشاء عنصر الزر وإضافته للصفحة
+    const btn = document.createElement('div');
+    btn.id = 'nav-toggle-btn';
+    btn.innerHTML = '<span class="material-icons">keyboard_arrow_up</span>';
+    
+    // ربط الدالة بالزر (الآن الدالة موجودة ولن يحدث خطأ)
+    btn.onclick = window.toggleNavbar;
+    
+    document.body.appendChild(btn);
+
+})();
     </script>
   </body>
 </html>
+
 
 
 
