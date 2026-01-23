@@ -2968,7 +2968,7 @@
       <!-- ... الأزرار الموجودة سابقاً ... -->
 <button
   class="castle-action-btn"
-  onclick="activateTeleportMode(); document.getElementById('castle-controls-panel').style.display='none'"
+  onclick="activateTeleportMode(); document.getElementById('castle-controls-panel').style.display='none'; document.getElementById('mobile-controls').style.display='flex'"
 >
   <span class="material-icons">travel_explore</span> نقل القلعة
 </button>
@@ -7548,7 +7548,8 @@ window.activateTeleportMode = () => {
 
     // 2. تفعيل الوضع وإظهار تنبيه
     isTeleporting = true;
-    alert("📍 وضع النقل مفعل!\nاضغط الآن على أي مكان فارغ في الأرض لنقل قلعتك إليه.");
+      document.getElementById('mobile-controls').style.display = 'flex'; 
+    alert(" وضع النقل مفعل!\nاضغط الآن على أي مكان فارغ في الأرض لنقل قلعتك إليه.");
     
     // إخفاء القوائم لتسهيل الرؤية
     if (mobileControls) mobileControls.style.display = 'none';
@@ -7639,6 +7640,7 @@ createRamadanStars();
     </script>
   </body>
 </html>
+
 
 
 
