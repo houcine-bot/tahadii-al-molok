@@ -3771,6 +3771,7 @@ activateFullScreenOnFirstInteraction();
             isAdmin = true;
             isModerator = true;
             openAdminPanel();
+                if (typeof updateAdminTreasureButton === "function") updateAdminTreasureButton();
           } else {
             alert("كود خاطئ.");
           }
@@ -6478,6 +6479,7 @@ activateFullScreenOnFirstInteraction();
     castleControlsPanel.style.display = "none";
     if (currentUser) mobileControls.style.display = "flex"; // إعادة الأزرار
 });
+
       // --- 15. منطق نافذة التطوير الجديد ---
 
       window.openUpgradeModal = () => {
@@ -6585,6 +6587,7 @@ activateFullScreenOnFirstInteraction();
         }
       };
 
+      // --- كود المصادقة المعدل (لحل مشكلة زر المشرفين) ---
       // --- كود المصادقة والتحكم (معدل بالكامل) ---
       onAuthStateChanged(auth, async (u) => {
         // تعريف العناصر
@@ -7361,7 +7364,7 @@ function checkAndStartTutorial() {
         }, 1500);
     }
 }
-      // =========================================================
+// =========================================================
 // 🏴‍☠️ نظام الكنز المفقود (Treasure Hunt System)
 // =========================================================
 
@@ -7856,7 +7859,67 @@ function createRamadanStars() {
 
 // تشغيل النجوم عند التحميل
 createRamadanStars();
-      // =========================================================
+// =========================================================
+// 🕵️‍♂️ زر الانتقال للكنز (خاص بالأدمن فقط)
+// =========================================================
+
+// 1. إنشاء الزر وتنسيقه
+const adminJumpBtn = document.createElement("div");
+adminJumpBtn.id = "admin-treasure-jump";
+adminJumpBtn.innerHTML = '<span class="material-icons" style="font-size: 28px; color: #fff;">diamond</span>';
+
+Object.assign(adminJumpBtn.style, {
+    position: "fixed",
+    top: "150px",         // أسفل الإحصائيات قليلاً
+    left: "20px",
+    width: "50px",
+    height: "50px",
+    borderRadius: "50%",
+    backgroundColor: "#c0392b", // لون أحمر مميز للأدمن
+    border: "2px solid #f1c40f",
+    display: "none",      // مخفي افتراضياً
+    justifyContent: "center",
+    alignItems: "center",
+    cursor: "pointer",
+    zIndex: "1900",
+    boxShadow: "0 0 15px #c0392b"
+});
+
+// إضافة تأثير عند التحويم
+adminJumpBtn.onmouseover = () => { adminJumpBtn.style.transform = "scale(1.1)"; };
+adminJumpBtn.onmouseleave = () => { adminJumpBtn.style.transform = "scale(1)"; };
+
+document.body.appendChild(adminJumpBtn);
+
+// 2. وظيفة الزر: الانتقال الفوري لموقع الكنز
+adminJumpBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // منع التفاعل مع اللعبة
+
+    if (treasureMesh) {
+        const tPos = treasureMesh.position;
+        
+        // تحريك الكاميرا فوق الكنز مباشرة
+        camera.position.set(tPos.x, 3000, tPos.z + 3000);
+        controls.target.set(tPos.x, 0, tPos.z);
+        controls.update();
+
+        alert(`✈️ تم النقل لموقع الكنز!\nالإحداثيات: ${Math.round(tPos.x)}, ${Math.round(tPos.z)}`);
+    } else {
+        alert("لا يوجد كنز نشط حالياً!");
+        adminJumpBtn.style.display = "none";
+    }
+});
+
+// 3. دالة للتحقق من إظهار الزر
+window.updateAdminTreasureButton = () => {
+    // يظهر فقط إذا كنت أدمن + الكنز موجود في المشهد
+    if (isAdmin && treasureMesh) {
+        adminJumpBtn.style.display = "flex";
+    } else {
+        adminJumpBtn.style.display = "none";
+    }
+};
+// =========================================================
 // 🟢 نظام إخفاء/إظهار الشريط العلوي (Navbar Toggler) - مصحح
 // =========================================================
 
@@ -7877,7 +7940,7 @@ createRamadanStars();
             transform: translateX(-50%);
             width: 60px;
             height: 25px;
-            background: rgba(0, 0, 0, 0.85);
+            background: yellow;
             border: 1px solid #f1c40f;
             border-top: none;
             border-radius: 0 0 15px 15px;
@@ -7890,11 +7953,8 @@ createRamadanStars();
             transition: top 0.4s ease-in-out, background 0.3s;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
-        #nav-toggle-btn:hover {
-            background: rgba(241, 196, 15, 0.2);
-        }
         #nav-toggle-btn span {
-            color: #f1c40f;
+            color: black;
             font-size: 24px;
             transition: transform 0.4s;
         }
@@ -7910,7 +7970,7 @@ createRamadanStars();
             top: 0 !important; /* يلتصق بأعلى الشاشة */
             border-top: 1px solid #f1c40f;
             border-radius: 0 0 10px 10px;
-            background: rgba(20, 20, 20, 0.95);
+            background: yellow;
         }
         body.nav-hidden #nav-toggle-btn span {
             transform: rotate(180deg); /* تدوير السهم */
@@ -7932,8 +7992,3 @@ createRamadanStars();
     </script>
   </body>
 </html>
-
-
-
-
-
