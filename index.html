@@ -2686,6 +2686,11 @@
           ></ul>
         </div>
       </div>
+      <hr style="border-color:#444; margin: 20px 0;">
+<h3 style="color: #FFD700; text-align: center;">بحث الكنز 🏴‍☠️</h3>
+<button class="recruit-btn" style="background: linear-gradient(180deg, #D4AF37, #AA8C2C);" onclick="spawnRemoteTreasure()">
+    إسقاط كنز في مكان نائي
+</button>
     </div>
 
     <!-- نافذة تطبيق العقوبة (Modal منفصل) -->
@@ -3441,6 +3446,7 @@
         getDocs,
         where,
         arrayUnion,
+         runTransaction,
       } from "firebase/firestore";
       import * as THREE from "three";
       import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -6359,6 +6365,19 @@ activateFullScreenOnFirstInteraction();
     mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
+     // --- كود الكنز الجديد (أضفه هنا) ---
+    if (treasureMesh) {
+        const hitTreasure = raycaster.intersectObject(treasureMesh, true); // true لفحص الأبناء (الغطاء والقاعدة)
+        if (hitTreasure.length > 0) {
+            // الكاميرا قريبة بما يكفي؟ (يجب أن تكون قريب لتفتحه)
+            const dist = camera.position.distanceTo(treasureMesh.position);
+            // نسمح بفتحه من أي مسافة للمتعة، أو يمكنك تقييدها بـ if (dist < 500)
+            
+            claimTreasure(); // استدعاء دالة الفتح
+            return; // إيقاف تنفيذ باقي الضغطات
+        }
+    }
+    // ------------------------------------
 
     // =========================================================
     // [جديد] منطق نقل القلعة (الأولوية القصوى)
@@ -6459,7 +6478,6 @@ activateFullScreenOnFirstInteraction();
     castleControlsPanel.style.display = "none";
     if (currentUser) mobileControls.style.display = "flex"; // إعادة الأزرار
 });
-
       // --- 15. منطق نافذة التطوير الجديد ---
 
       window.openUpgradeModal = () => {
@@ -7369,6 +7387,200 @@ function checkAndStartTutorial() {
         }, 1500);
     }
 }
+      // =========================================================
+// 🏴‍☠️ نظام الكنز المفقود (Treasure Hunt System)
+// =========================================================
+
+let treasureMesh = null; // لتخزين مجسم الكنز
+
+// 1. دالة تصميم صندوق الكنز (3D Model)
+function createTreasureChest() {
+    const chestGroup = new THREE.Group();
+    chestGroup.userData = { isTreasure: true };
+
+    // الخامات
+    const woodMat = new THREE.MeshStandardMaterial({ color: 0x8B4513, roughness: 0.8 }); // خشب بني
+    const goldMat = new THREE.MeshStandardMaterial({ color: 0xFFD700, metalness: 0.8, roughness: 0.2 }); // ذهب لامع
+    const innerMat = new THREE.MeshStandardMaterial({ color: 0x000000 }); // داخل الصندوق (أسود)
+
+    // --- القاعدة (Base) ---
+    const baseGeo = new THREE.BoxGeometry(20, 12, 14);
+    const base = new THREE.Mesh(baseGeo, woodMat);
+    base.position.y = 6;
+    base.castShadow = true;
+    chestGroup.add(base);
+
+    // أشرطة ذهبية عمودية على القاعدة
+    const bandGeo = new THREE.BoxGeometry(20.5, 12.5, 2);
+    const band1 = new THREE.Mesh(bandGeo, goldMat);
+    band1.position.set(0, 6, -4);
+    chestGroup.add(band1);
+
+    const band2 = new THREE.Mesh(bandGeo, goldMat);
+    band2.position.set(0, 6, 4);
+    chestGroup.add(band2);
+
+    // --- الغطاء (Lid) - نصف أسطوانة ---
+    // CylinderGeometry(radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength)
+    const lidGeo = new THREE.CylinderGeometry(7, 7, 20, 16, 1, false, 0, Math.PI);
+    const lid = new THREE.Mesh(lidGeo, woodMat);
+    lid.rotation.z = Math.PI / 2; // تدوير لتصبح أفقية
+    lid.position.y = 12; // فوق القاعدة
+    lid.castShadow = true;
+    chestGroup.add(lid);
+
+    // أشرطة ذهبية على الغطاء
+    const lidBandGeo = new THREE.CylinderGeometry(7.2, 7.2, 2, 16, 1, false, 0, Math.PI);
+    
+    const lidBand1 = new THREE.Mesh(lidBandGeo, goldMat);
+    lidBand1.rotation.z = Math.PI / 2;
+    lidBand1.position.set(-4, 12, 0);
+    chestGroup.add(lidBand1);
+
+    const lidBand2 = new THREE.Mesh(lidBandGeo, goldMat);
+    lidBand2.rotation.z = Math.PI / 2;
+    lidBand2.position.set(4, 12, 0);
+    chestGroup.add(lidBand2);
+
+    // --- القفل (Lock) ---
+    const lockGeo = new THREE.BoxGeometry(4, 5, 2);
+    const lock = new THREE.Mesh(lockGeo, goldMat);
+    lock.position.set(0, 11, 7); // في مقدمة الصندوق
+    chestGroup.add(lock);
+
+    // --- تأثيرات بصرية (ضوء وجزيئات) ---
+    // ضوء ذهبي ينبعث منه ليراه اللاعب في المكان النائي
+    const light = new THREE.PointLight(0xFFD700, 2, 300);
+    light.position.set(0, 20, 0);
+    chestGroup.add(light);
+
+    // نص عائم فوقه
+    const canvas = document.createElement('canvas');
+    canvas.width = 256; canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    ctx.font = "bold 40px 'Cairo'";
+    ctx.fillStyle = "#FFD700";
+    ctx.textAlign = "center";
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 4;
+    ctx.strokeText("كنز أسطوري", 128, 60);
+    ctx.fillText("كنز أسطوري", 128, 60);
+    
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true }));
+    sprite.position.set(0, 40, 0);
+    sprite.scale.set(60, 30, 1);
+    chestGroup.add(sprite);
+
+    // تكبير الحجم الكلي قليلاً
+    chestGroup.scale.set(10, 10, 10);
+
+    return chestGroup;
+}
+
+// 2. مراقبة الكنز (Firestore Listener)
+function initTreasureSystem() {
+    onSnapshot(doc(db, "events", "global_treasure"), (docSnap) => {
+        const data = docSnap.data();
+
+        if (docSnap.exists() && data.active) {
+            if (!treasureMesh) {
+                treasureMesh = createTreasureChest();
+                scene.add(treasureMesh);
+                alert(`🏴‍☠️ ظهر كنز أسطوري في مكان ما!`);
+            }
+            treasureMesh.position.set(data.x, 5, data.z);
+            treasureMesh.rotation.y = Math.random() * Math.PI;
+            treasureMesh.userData.treasureId = docSnap.id;
+
+            // 🔥 أضف هذا السطر هنا (تحديث الزر عند ظهور الكنز)
+            if (typeof updateAdminTreasureButton === "function") updateAdminTreasureButton();
+
+        } else {
+            if (treasureMesh) {
+                scene.remove(treasureMesh);
+                treasureMesh = null;
+            }
+            
+            // 🔥 وأضف هذا السطر هنا (إخفاء الزر عند اختفاء الكنز)
+            if (typeof updateAdminTreasureButton === "function") updateAdminTreasureButton();
+        }
+    });
+}
+
+// 3. دالة محاولة أخذ الكنز (فتح الصندوق)
+async function claimTreasure() {
+    if (!currentUser || !treasureMesh) return;
+
+    const confirmClaim = confirm("هل تريد فتح الكنز الأسطوري؟\n(قد يحتوي على ثروة طائلة!)");
+    if (!confirmClaim) return;
+
+    try {
+        // نستخدم Transaction لضمان أن شخصاً واحداً فقط يأخذه
+        await runTransaction(db, async (transaction) => {
+            const treasureRef = doc(db, "events", "global_treasure");
+            const treasureDoc = await transaction.get(treasureRef);
+
+            if (!treasureDoc.exists() || !treasureDoc.data().active) {
+                throw "عذراً! الكنز اختفى أو أخذه لاعب آخر قبلك.";
+            }
+
+            // 1. إخفاء الكنز وتسجيل الفائز
+            transaction.update(treasureRef, {
+                active: false,
+                claimedBy: currentUser.uid,
+                claimedAt: Date.now()
+            });
+
+            // 2. إضافة الموارد للاعب (10 مليون من كل نوع)
+            const userRef = doc(db, "users", currentUser.uid);
+            const prizeAmount = 10000000; // 10 مليون
+
+            transaction.update(userRef, {
+                gold: increment(prizeAmount),
+                silver: increment(prizeAmount),
+                wood: increment(prizeAmount),
+                power: increment(50000) // زيادة قوة بسيطة كجائزة إضافية
+            });
+        });
+
+        // تشغيل صوت أو تأثير (اختياري)
+        alert("🎉 مبروووك! لقد فتحت الكنز وحصلت على 10,000,000 من كل مورد!");
+
+    } catch (e) {
+        console.error(e);
+        alert("❌ فشل فتح الكنز: " + (typeof e === 'string' ? e : e.message));
+    }
+}
+
+// 4. دالة للمشرف (Admin) لإنشاء كنز في مكان نائي
+window.spawnRemoteTreasure = async () => {
+    if (!currentUser) return;
+    // تحقق بسيط (يمكنك تعقيده ليكون للأدمن فقط)
+    
+    // توليد إحداثيات بعيدة جداً (بين 100,000 و 180,000)
+    // الخريطة حجمها 400,000، لذا هذه الأرقام قريبة من الحواف
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 120000 + (Math.random() * 60000); // مسافة بين 120k و 180k
+    const x = Math.cos(angle) * distance;
+    const z = Math.sin(angle) * distance;
+
+    try {
+        await setDoc(doc(db, "events", "global_treasure"), {
+            active: true,
+            x: x,
+            z: z,
+            spawnedAt: Date.now(),
+            spawnedBy: currentUser.email
+        });
+        console.log(`Treasure Spawned at: ${x}, ${z}`);
+        alert("تم إنشاء الكنز في مكان نائي!");
+    } catch (e) {
+        alert("خطأ: " + e.message);
+    }
+};
+
+// تشغيل النظام
+initTreasureSystem();
       // --- 16. حلقة التحريك الرئيسية (Animation Loop) ---
       function animate() {
         requestAnimationFrame(animate);
@@ -7673,4 +7885,5 @@ createRamadanStars();
     </script>
   </body>
 </html>
+
 
